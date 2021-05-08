@@ -25,5 +25,6 @@ setup(
         'jinja2',
         'cocotb-test',
         'fusesoc',
+        'numpy',
     ],
 )
