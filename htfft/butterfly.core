@@ -1,0 +1,16 @@
+CAPI=2:
+
+name : ::butterfly
+description: A butterfly module for a FFT
+
+filesets:
+  default:
+    files:
+      - mult.vhd
+      - shift_register.vhd
+      - butterfly.vhd
+
+targets:
+  default:
+    toplevel : butterfly
+    filesets: [default]
