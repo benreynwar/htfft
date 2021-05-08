@@ -1,0 +1,16 @@
+CAPI=2:
+
+name : ::comb_reordering
+description: Combinatorial reordering for the step step in a FFT.
+
+filesets:
+  default:
+    files:
+      - comb_reordering.vhd
+    depend:
+      - htfft_pkg
+
+targets:
+  default:
+    toplevel : comb_reordering
+    filesets: [default]

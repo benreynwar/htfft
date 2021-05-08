@@ -1,0 +1,13 @@
+CAPI=2:
+
+name : ::htfft_pkg
+description: Package with utilities for htfft core.
+
+filesets:
+  default:
+    files:
+      - htfft_pkg.vhd
+
+targets:
+  default:
+    filesets: [default]

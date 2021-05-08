@@ -32,6 +32,19 @@ architecture arch of butterfly is
       return 0;
     end if;
   end function;
+
+  subtype t_expanded is signed(WIDTH/2+TWIDDLE_WIDTH/2-1 downto 0);
+  subtype t_trimmed is signed(WIDTH/2-1 downto 0);
+  subtype t_top is signed(WIDTH/2-1 downto 0);
+  function trim(expanded: t_expanded) return t_trimmed is
+    constant top: t_top := expanded(WIDTH/2+TWIDDLE_WIDTH/2-2-1 downto TWIDDLE_WIDTH/2-2);
+  begin
+    --if expanded(TWIDDLE_WIDTH/2-3) = '0' then
+      return top;
+    --else
+    --  return top + 1;
+    --end if;
+  end function;
     
 
   constant PIPELINE_LENGTH_TO_S: natural := bool_to_int(REG_I_P) + bool_to_int(REG_Q_R) + bool_to_int(REG_R_S) +
@@ -146,10 +159,10 @@ begin
   -- FIXME: Probably should do better rounding rather than just truncation as well.
   -- Uppermost bit of expanded can be ignored since it's the result of
   -- multiplying two signed numbers but we still added the widths together.
-  q_bt_real_real <= q_bt_real_real_expanded(WIDTH/2+TWIDDLE_WIDTH/2-2-1 downto TWIDDLE_WIDTH/2-2);
-  q_bt_real_imag <= q_bt_real_imag_expanded(WIDTH/2+TWIDDLE_WIDTH/2-2-1 downto TWIDDLE_WIDTH/2-2);
-  q_bt_imag_real <= q_bt_imag_real_expanded(WIDTH/2+TWIDDLE_WIDTH/2-2-1 downto TWIDDLE_WIDTH/2-2);
-  q_bt_imag_imag <= q_bt_imag_imag_expanded(WIDTH/2+TWIDDLE_WIDTH/2-2-1 downto TWIDDLE_WIDTH/2-2);
+  q_bt_real_real <= trim(q_bt_real_real_expanded);
+  q_bt_real_imag <= trim(q_bt_real_imag_expanded);
+  q_bt_imag_real <= trim(q_bt_imag_real_expanded);
+  q_bt_imag_imag <= trim(q_bt_imag_imag_expanded);
 
   yes_reg_q_r: if REG_Q_R generate
     process(clk)

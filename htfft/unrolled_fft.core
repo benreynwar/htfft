@@ -1,0 +1,18 @@
+CAPI=2:
+
+name : ::unrolled_fft
+description: An unrolled FFT implementation.
+
+
+generators:
+  unrolled_fft_gen:
+    interpreter: python
+    command: unrolled_fft_gen.py
+    description : Generated an unrolled fft design.
+    usage: |
+      Parameters:
+        suffix (str): A suffix for the fft to be used if multiple different
+          generated ffts need to be used in the same design.
+        input_width (int): The width of the inputs into the fft.
+        twiddle_width (int): The width of the twiddle factors used.
+        size (int): The size of the fft.
