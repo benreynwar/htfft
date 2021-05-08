@@ -1,0 +1,28 @@
+CAPI=2:
+
+name : ::stage_example
+description: An example using the stage generator.
+
+filesets:
+  default:
+    depend:
+      - htfft_pkg
+      - butterfly
+      - memory
+      - stage_gen
+
+targets:
+  default:
+    generate : [stage_gen]
+    toplevel : stage_4_example
+    filesets: [default]
+
+generate:
+  stage_gen:
+    generator : stage_gen
+    parameters:
+      suffix: _example
+      n: 4
+      size: 2
+      width: 16
+      twiddle_width: 16

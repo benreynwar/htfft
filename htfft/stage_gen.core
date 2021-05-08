@@ -1,0 +1,19 @@
+CAPI=2:
+
+name : ::stage_gen
+description: Generator for a htfft rolled stage.
+
+
+generators:
+  stage_gen:
+    interpreter: python
+    command: stage_gen.py
+    description : Generates a stage for fft rolled stage.
+    usage: |
+      Parameters:
+        suffix (str): A suffix for the fft to be used if multiple different
+          generated ffts need to be used in the same design.
+        width (int): The width of the inputs into the fft.
+        twiddle_width (int): The width of the twiddle factors used.
+        size (int): The number of samples processed in parallel.
+        n (int): The total size of the fft.
