@@ -31,7 +31,7 @@ To do
 
 Architecture
 ------------
-![Hardware to FFT flow map](docs/fft.png)
+![Hardware to FFT flow map](docs/fft.svg)
 
 Top-level HTFFT Ports
 ---------------------
