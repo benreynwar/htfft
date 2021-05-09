@@ -31,7 +31,7 @@ To do
 
 Architecture
 ------------
-Include picture here.
+![Hardware to FFT flow map](docs/fft.png)
 
 Top-level HTFFT Ports
 ---------------------
@@ -76,6 +76,7 @@ Modules
 - stage
   * A stage in a FFT where SIZE < N.  Used interally in the HTFFT.
   * Mostly working but poorly tested.  Has issues with rounding an precision.
+  * More [Stage Docs](/docs/stage.md)
  
 - butterfly
   * A FFT butterfly module.  Used by 'stage' and 'unrolled_fft_inner'.
