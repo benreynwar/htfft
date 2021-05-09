@@ -27,7 +27,6 @@ To do
 * [ ] Top level
 * [ ] Documentation
 * [ ] Improve testing
-* [ ] Fix twiddle precision so it matches sample width.  Currently much smaller for later stages.
 * [ ] Investigate rounding and precision
 * [ ] Look for better architectures in literature.
 

@@ -1,4 +1,5 @@
 import os
+import shutil
 from random import Random
 
 from numpy import fft
@@ -40,7 +41,9 @@ async def test_unrolled_fft(dut):
 
 
 def main():
-    working_directory = os.path.abspath('test_blahblah')
+    working_directory = os.path.abspath('temp_test_unrolled_fft')
+    if os.path.exists(working_directory):
+        shutil.rmtree(working_directory)
     os.makedirs(working_directory)
     core_name = 'unrolled_fft_example'
     top_name = 'unrolled_fft_64_example'

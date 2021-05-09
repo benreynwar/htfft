@@ -16,13 +16,17 @@ def generate_unrolled_fft_inner(size, input_width, twiddle_width, suffix):
     else:
         smaller_filenames = []
 
+    # Increasing the twiddle width with the other butterfly inputs.
+    # Doesn't seem to help much, but probably worth doing.
+    used_twiddle_width = twiddle_width + 2*(helper.logceil(size)-1)
+
     twiddles = [conversions.int_to_str(conversions.complex_to_slv(
-        helper.get_twiddle(position, size), twiddle_width), twiddle_width)
+        helper.get_twiddle(position, size), used_twiddle_width), used_twiddle_width)
                 for position in range(size//2)]
     params = {
         'size': size,
         'input_width': input_width,
-        'twiddle_width': twiddle_width,
+        'twiddle_width': used_twiddle_width,
         'suffix': suffix,
         'logceil_size': helper.logceil(size),
         'twiddles': twiddles,
