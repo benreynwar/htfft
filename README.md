@@ -27,7 +27,9 @@ To do
 * [ ] Top level
 * [ ] Documentation
 * [ ] Improve testing
+* [ ] Fix twiddle precision so it matches sample width.  Currently much smaller for later stages.
 * [ ] Investigate rounding and precision
+* [ ] Look for better architectures in literature.
 
 Architecture
 ------------
@@ -116,7 +118,8 @@ Modules
  
 - initial_memory
   * Does the initial reordering in the HTFFT.
-    Work in progress
+  * Work in progress
+  * More [Intial Memory Docs](/docs/initial_memory.md)
    
 - barrel_shifter
   * A barrel shifter implementation.  Used in the initial_memory. Unimplemented.

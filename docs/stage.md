@@ -43,3 +43,7 @@ be implemented with a memory of depth 4.
 More generally the required depth of memories A and B will be N/4 where
 N is the size of the FFT for which this stage would be the last stage.
 
+The architecture of a stage implied by this memory organization is given
+in the following diagram.
+
+![Diagram of Stage Architecture](stage_arch.svg)
