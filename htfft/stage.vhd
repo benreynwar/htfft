@@ -31,26 +31,24 @@ architecture arch of stage_{{n}}{{suffix}} is
   function ADDRESS_CLASH return string is
   begin
     if L=2 then
-      -- For L=2 we get address clash so we need to make sure our
-      -- memory can handle this.
-      return "OLD";
+      return "NEW";
     else
-      -- For larger N we'll never get an address clash so we can
-      -- make sure memory isn't constrained to support this.
       return "UNDEFINED";
     end if;
   end function;
 
+  signal write_valid_a: std_logic;
+  signal write_valid_b: std_logic;
   signal write_index: unsigned(logceil(L)-1 downto 0);
-  signal write_address_a: unsigned(logceil(L)-1 downto 0);
-  signal write_address_b: unsigned(logceil(L)-1 downto 0);
+  signal write_address: unsigned(logceil(L/2)-1 downto 0);
   signal write_data_a: std_logic_vector(SIZE*WIDTH/2-1 downto 0);
   signal write_data_b: std_logic_vector(SIZE*WIDTH/2-1 downto 0);
 
   signal read_index: unsigned(logceil(L)-1 downto 0);
 
-  signal toread_address_a: unsigned(logceil(L)-1 downto 0);
-  signal toread_address_b: unsigned(logceil(L)-1 downto 0);
+  signal toread_valid_a: std_logic;
+  signal toread_valid_b: std_logic;
+  signal toread_address: unsigned(logceil(L/2)-1 downto 0);
 
   signal fromread_data_a: std_logic_vector(SIZE*WIDTH/2-1 downto 0);
   signal fromread_data_b: std_logic_vector(SIZE*WIDTH/2-1 downto 0);
@@ -92,10 +90,10 @@ begin
   process(clk)
   begin
     if rising_edge(clk) then
-      if write_index = L/2 then
-        -- We've writing the second half of the data needed for the
-        -- first read of the next stage so we can do that first read
-        -- next clock cycle.
+      -- We could probably get away with one counter
+      -- rather than two here, but I think it's easier
+      -- to understand with two.
+      if read_index = L-1 then
         read_index <= (others => '0');
       else
         read_index <= read_index + 1;
@@ -107,72 +105,68 @@ begin
       end if;
       if i_reset = '1' then
         write_index <= (others => '0');
+        read_index <= to_unsigned(L/2+1, logceil(L));
       end if;
     end if;
   end process;
 
-  -- We're splitting the data into two memories.  This is so that we can write
-  -- into the two regions we need to, and read from the two regions we need to
-  -- every clock cycle.
-  -- The address mappings are just chosen so that the two reads are always one
-  -- in each memory, and the same for the two writes.
+  write_valid_a <= '1';
+  write_valid_b <= not write_index(logceil(L)-1);
+  write_address <= write_index(logceil(L)-1-1 downto 0);
 
-  -- FIXME: I think we could probably halve the memory use here, but let's get
-  -- it working first.  We start reading after writing half of the contents and
-  -- we should be able to use the addresses we've just read to write into.
-  write_address_a <= write_index;
-  write_address_b <= write_index;
-  toread_address_a <= read_index;
-  toread_address_b(logceil(L)-1) <= not read_index(logceil(L)-1);
-  toread_address_b(logceil(L)-1-1 downto 0) <= read_index(logceil(L)-1-1 downto 0);
+  toread_valid_a <= '1';
+  toread_valid_b <= read_index(logceil(L)-1);
+  toread_address <= read_index(logceil(L)-1-1 downto 0);
 
   write_data_a <= i_data_a when write_index(logceil(L)-1) = '0' else
                   i_data_b;
-  write_data_b <= i_data_b when write_index(logceil(L)-1) = '0' else
-                  i_data_a;
+  write_data_b <= i_data_b;
 
   memory_a: entity work.memory
     generic map (
-      DEPTH => L,
+      DEPTH => L/2,
       WIDTH => SIZE*WIDTH/2,
       ADDRESS_CLASH => ADDRESS_CLASH
       )
     port map (
       clk => clk,
-      toread_valid => '1',
-      toread_address => toread_address_a,
+      toread_valid => toread_valid_a,
+      toread_address => toread_address,
       fromread_data => fromread_data_a,
-      write_valid => '1',
-      write_address => write_address_a,
+      write_valid => write_valid_a,
+      write_address => write_address,
       write_data => write_data_a
       );
 
   memory_b: entity work.memory
     generic map (
-      DEPTH => L,
+      DEPTH => L/2,
       WIDTH => SIZE*WIDTH/2,
       ADDRESS_CLASH => ADDRESS_CLASH
       )
     port map (
       clk => clk,
-      toread_valid => '1',
-      toread_address => toread_address_b,
+      -- read_valid_b is just used to bring the power down when
+      -- we're not reading from this memory.
+      -- It's not necessary for correctness. 
+      toread_valid => toread_valid_b,
+      toread_address => toread_address,
       fromread_data => fromread_data_b,
-      write_valid => '1',
-      write_address => write_address_b,
+      write_valid => write_valid_b,
+      write_address => write_address,
       write_data => write_data_b
       );
 
   tobutterfly_data_a <= fromread_data_a when tobutterfly_swap = '0' else
                         fromread_data_b;
-  tobutterfly_data_b <= fromread_data_b when tobutterfly_swap = '0' else
+  tobutterfly_data_b <= i_data_a when tobutterfly_swap = '0' else
                         fromread_data_a;
 
   process(clk)
   begin
     if rising_edge(clk) then
       tobutterfly_twiddles <= LOCAL_TWIDDLES(to_integer(read_index));
-      tobutterfly_swap <= write_index(logceil(L)-1);
+      tobutterfly_swap <= read_index(logceil(L)-1);
     end if;
   end process;
 
@@ -207,7 +201,7 @@ begin
   sr: entity work.shift_register
     generic map (
       WIDTH => 1,
-      LENGTH => BUTTERFLY_PIPELINE_LENGTH + 1 + N/2
+      LENGTH => BUTTERFLY_PIPELINE_LENGTH + L/2
       )
     port map (
       clk => clk,

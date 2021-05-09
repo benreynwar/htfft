@@ -36,7 +36,7 @@ begin
         memory_contents(to_integer(write_address)) <= write_data;
       end if;
       if toread_valid = '1' then
-        if (write_valid = '1') and (write_address = toread_address) then
+        if (write_valid = '1') and ((DEPTH = 1) or (write_address = toread_address)) then
           if ADDRESS_CLASH = "OLD" then
             fromread_data <= memory_contents(to_integer(toread_address));
           elsif ADDRESS_CLASH = "NEW" then

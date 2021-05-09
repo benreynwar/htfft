@@ -14,7 +14,7 @@ filesets:
 targets:
   default:
     generate : [stage_gen]
-    toplevel : stage_4_example
+    toplevel : stage_8_example
     filesets: [default]
 
 generate:
@@ -22,7 +22,7 @@ generate:
     generator : stage_gen
     parameters:
       suffix: _example
-      n: 4
-      size: 2
+      n: 8
+      size: 4
       width: 16
       twiddle_width: 16

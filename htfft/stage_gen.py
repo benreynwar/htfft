@@ -11,11 +11,14 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 def generate_stage(n, size, width, twiddle_width, suffix):
     assert size == pow(2, helper.logceil(size))
 
-    twiddle_batches = [[
-        conversions.int_to_str(conversions.complex_to_slv(
-            helper.get_twiddle(position, n), twiddle_width), twiddle_width)
-                for position in range(base, base+size//2)]
-                       for base in range(0, n//size)]
+    twiddle_batches = []
+    batch_size = size//2
+    for batch_index in range(n//size):
+        base_index = batch_index * batch_size
+        twiddles = [conversions.int_to_str(conversions.complex_to_slv(
+            helper.get_twiddle(base_index+index, n), twiddle_width), twiddle_width)
+                    for index in range(batch_size)]
+        twiddle_batches.append(twiddles)
     params = {
         'n': n,
         'size': size,
@@ -29,7 +32,7 @@ def generate_stage(n, size, width, twiddle_width, suffix):
         template_text = f.read()
         template = jinja2.Template(template_text)
     formatted_text = template.render(**params)
-    output_filename = 'stage_{}{}.vhd'.format(size, suffix)
+    output_filename = 'stage_{}{}.vhd'.format(n, suffix)
     with open(output_filename, 'w') as g:
         g.write(formatted_text)
     return [output_filename]

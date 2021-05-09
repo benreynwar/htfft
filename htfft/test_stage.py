@@ -39,9 +39,14 @@ async def check_output(dut, input_data, N, size, width):
         received_data_b = conversions.list_of_complex_from_slv(
             int(dut.o_data_b.value), width=width, size=size//2)
         received_data_b = [2 * x for x in received_data_b]
-        assert expected_data_a == received_data_a
-        assert expected_data_b == received_data_b
+        check_equal(expected_data_a, received_data_a)
+        check_equal(expected_data_b, received_data_b)
         await triggers.RisingEdge(dut.clk)
+
+
+def check_equal(complexes_a, complexes_b):
+    for a, b in zip(complexes_a, complexes_b):
+        assert abs(a - b) < 1e-2
 
 
 def stage_model(input_data):
@@ -85,7 +90,7 @@ async def test_stage(dut):
     await triggers.RisingEdge(dut.clk)
     dut.i_reset <= 0
 
-    input_data = [0, 1, 0, 0]
+    input_data = [0.2 - 0.3j, -1, 1, 0.3-0.2j, -1, 0.1, 0.5 - 0.5j, 0+0.1j]
     cocotb.fork(send_input(
         dut=dut,
         input_data=input_data,
@@ -112,7 +117,7 @@ def main():
     working_directory = os.path.abspath('temp_test_stage')
     os.makedirs(working_directory)
     core_name = 'stage_example'
-    top_name = 'stage_4_example'
+    top_name = 'stage_8_example'
     test_module_name = 'test_stage'
     wave = True
     helper.run_core(working_directory, core_name, top_name, test_module_name,
