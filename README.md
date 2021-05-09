@@ -31,7 +31,28 @@ To do
 
 Architecture
 ------------
+
+The architecture of the HTFFT is split into four main components:
+ - **Initial Memory** takes care of reordering the input vector.
+ - **Unrolled FFT** performs SPCC-input FFTs on the input vectors.
+   Because SPCC samples arrive every clock cycle, this module does
+   not need any memory beyond the flipflops requried for pipelining.
+ - **FFT Stages** are used for the subsequent stages of the FFT.
+   These consume their inputs over multiple clock cycles and so require
+   memories to store their inputs and peform reordering.
+ - **Final Memory** takes care of reordering the output vector.
+ 
+The diagram below shows a top level architecture for a 16-point FFT
+that consumes 4 samples every clock cycle.
+
+![Top Level Architecture](docs/top.svg)
+
+The following diagram shows how those hardware blocks would operate
+on the FFT structure.  It doesn't take into account pipelining at all
+so isn't realistic.
+
 ![Hardware to FFT flow map](docs/fft.svg)
+
 
 Top-level HTFFT Ports
 ---------------------
