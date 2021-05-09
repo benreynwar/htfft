@@ -1,0 +1,19 @@
+CAPI=2:
+
+name : ::htfft_gen
+description: Generator for a high throughput FFT.
+
+
+generators:
+  stage_gen:
+    interpreter: python
+    command: htfft_gen.py
+    description : Generates a high throughput FFT.
+    usage: |
+      Parameters:
+        suffix (str): A suffix for the fft to be used if multiple different
+          generated ffts need to be used in the same design.
+        width (int): The width of the inputs into the fft.
+        twiddle_width (int): The width of the twiddle factors used.
+        size (int): The number of samples processed in parallel.
+        n (int): The total size of the fft.

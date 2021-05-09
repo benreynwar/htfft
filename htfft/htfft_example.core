@@ -1,0 +1,29 @@
+CAPI=2:
+
+name : ::htfft_example
+description: An example using the HTFFT generator.
+
+filesets:
+  default:
+    depend:
+      - htfft_pkg
+      - butterfly
+      - memory
+      - initial_memory
+      - final_memory
+
+targets:
+  default:
+    generate : [htfft_gen]
+    toplevel : htfft_8_example
+    filesets: [default]
+
+generate:
+  htfft_gen:
+    generator : htfft_gen
+    parameters:
+      suffix: _example
+      n: 8
+      size: 4
+      width: 16
+      twiddle_width: 16
