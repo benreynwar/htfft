@@ -82,6 +82,7 @@ def run_core(working_directory, core_name, top_name, test_module_name,
 
 def run_with_cocotb(working_directory, filenames, top_name, test_module_name, wave=False,
                     generics={}):
+    os.environ['SIM'] = 'ghdl'
     if wave:
         simulation_args = ['--wave=dump.ghw']
     else:

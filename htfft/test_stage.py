@@ -1,4 +1,5 @@
 import os
+import shutil
 from random import Random
 
 import cocotb
@@ -115,6 +116,8 @@ async def test_stage(dut):
 
 def main():
     working_directory = os.path.abspath('temp_test_stage')
+    if os.path.exists(working_directory):
+        shutil.rmtree(working_directory)
     os.makedirs(working_directory)
     core_name = 'stage_example'
     top_name = 'stage_8_example'
