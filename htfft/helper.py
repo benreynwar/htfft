@@ -74,14 +74,14 @@ def get_files(core_name, working_directory, verbose=False, config_filename=None)
 
 
 def run_core(working_directory, core_name, top_name, test_module_name,
-             wave=False, generics={}):
+             wave=False, generics=None, extra_env=None):
     filenames = get_files(core_name, working_directory, verbose=True)
     run_with_cocotb(working_directory, filenames, top_name, test_module_name,
-                    wave, generics)
+                    wave, generics, extra_env=extra_env)
 
 
 def run_with_cocotb(working_directory, filenames, top_name, test_module_name, wave=False,
-                    generics={}):
+                    generics={}, extra_env={}):
     os.environ['SIM'] = 'ghdl'
     if wave:
         simulation_args = ['--wave=dump.ghw']
@@ -94,8 +94,9 @@ def run_with_cocotb(working_directory, filenames, top_name, test_module_name, wa
     os.chdir(working_directory)
     run(
         vhdl_sources=filenames,
-        simulation_args=simulation_args,
+        sim_args=simulation_args,
         toplevel=top_name,
         module=test_module_name,
+        extra_env=extra_env,
         )
     os.chdir(pwd)

@@ -1,0 +1,16 @@
+CAPI=2:
+
+name : ::barrel_shifter
+description: A generic barrel shifter.
+
+filesets:
+  default:
+    files:
+      - barrel_shifter.vhd
+    depend:
+      - htfft_pkg
+
+targets:
+  default:
+    filesets: [default]
+    toplevel: barrel_shifter
