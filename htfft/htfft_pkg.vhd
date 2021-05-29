@@ -15,4 +15,15 @@ package body htfft_pkg is
     return n_bits;
   end function;
 
+  function count_pipeline_length(pipeline: string) return natural is
+    variable count: natural := 0;
+  begin
+    for index in pipeline'range loop
+      if pipeline(index) = '1' then
+        count := count + 1;
+      end if;
+    end loop;
+    return count;
+  end function;
+
 end package body;
