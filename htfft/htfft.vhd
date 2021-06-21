@@ -4,6 +4,7 @@ use ieee.std_logic_1164.all;
 entity htfft{{suffix}} is
  port (
    clk: in std_logic;
+   reset: in std_logic;
    -- Indicates this is the first clock cycle of data for this FFT.
    i_first: in std_logic;
    i_data: in std_logic_vector({{size}}*{{input_width}}-1 downto 0);
@@ -31,7 +32,8 @@ begin
   initial: entity work.initial_memory
     port map (
       clk => clk,
-      i_reset => i_first,
+      reset => reset,
+      i_beforefirst => i_first,
       i_data => p_data,
       o_data => q_data
       );

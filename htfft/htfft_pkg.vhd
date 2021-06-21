@@ -1,5 +1,6 @@
 package htfft_pkg is
   function logceil(value: natural) return integer;
+  function count_pipeline_length(pipeline: string) return natural;
 end package;
 
 package body htfft_pkg is

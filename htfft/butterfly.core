@@ -7,8 +7,9 @@ filesets:
   default:
     files:
       - mult.vhd
-      - shift_register.vhd
       - butterfly.vhd
+    depend:
+      - shift_register
 
 targets:
   default:
