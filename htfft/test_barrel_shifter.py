@@ -90,5 +90,6 @@ def main():
     helper.run_core(working_directory, core_name, top_name, test_module_name,
                     wave=wave, generics=generics, extra_env=env)
 
+
 if __name__ == '__main__':
     main()

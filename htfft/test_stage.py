@@ -1,6 +1,5 @@
 import os
 import shutil
-from random import Random
 
 import cocotb
 from cocotb import clock, triggers
@@ -8,6 +7,7 @@ from cocotb import clock, triggers
 from htfft import helper, conversions
 
 basedir = os.path.abspath(os.path.dirname(__file__))
+
 
 async def send_input(dut, input_data, N, size, width):
     chunked_data = [input_data[index*size//2: (index+1)*size//2]
@@ -70,9 +70,6 @@ def stage_model(input_data):
 
 @cocotb.test()
 async def test_stage(dut):
-    seed = 0
-    rnd = Random(seed)
-
     cocotb.fork(clock.Clock(dut.clk, 2, 'ns').start())
 
     # Total FFT size
@@ -83,8 +80,6 @@ async def test_stage(dut):
     size = int(dut.size.value)
 
     output_width = int(dut.output_width.value)
-
-    allowed_diff = 2 * 1/pow(2, width//2 - 2)
 
     await triggers.RisingEdge(dut.clk)
     dut.i_reset <= 1
@@ -125,6 +120,7 @@ def main():
     wave = True
     helper.run_core(working_directory, core_name, top_name, test_module_name,
                     wave=wave)
+
 
 if __name__ == '__main__':
     main()
