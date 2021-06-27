@@ -12,7 +12,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 @cocotb.test()
-async def test_unrolled_fft(dut):
+async def unrolled_fft_test(dut):
     seed = 0
     rnd = Random(seed)
     size = int(dut.size.value)

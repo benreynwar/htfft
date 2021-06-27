@@ -40,7 +40,7 @@ async def check_data(dut, size, shift_increment, pipeline_length):
 
 
 @cocotb.test()
-async def test_barrel_shifter(dut):
+async def barrel_shifter_test(dut):
     seed = 0
     rnd = Random(seed)
 

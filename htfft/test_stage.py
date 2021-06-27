@@ -69,7 +69,7 @@ def stage_model(input_data):
 
 
 @cocotb.test()
-async def test_stage(dut):
+async def stage_test(dut):
     cocotb.fork(clock.Clock(dut.clk, 2, 'ns').start())
 
     # Total FFT size

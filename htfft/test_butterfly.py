@@ -10,7 +10,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 @cocotb.test()
-async def test_unrolled_fft(dut):
+async def butterfly_test(dut):
     seed = 0
     rnd = Random(seed)
     width = int(dut.width.value)

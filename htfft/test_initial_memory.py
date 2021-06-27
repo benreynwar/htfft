@@ -60,7 +60,7 @@ async def check_data(dut, width, spcc, n, pipeline_length, sent_queue):
 
 
 @cocotb.test()
-async def test_initial_memory(dut):
+async def initial_memory_test(dut):
     seed = 0
     rnd = Random(seed)
 

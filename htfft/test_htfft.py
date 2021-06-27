@@ -71,7 +71,7 @@ async def check_data(rnd, dut, sent_queue, n, spcc, input_width, output_width, n
 
 
 @cocotb.test()
-async def test_htfft(dut):
+async def htfft_test(dut):
     test_params = helper.get_test_params()
     spcc = test_params['spcc']
     n = test_params['n']
@@ -105,7 +105,10 @@ def make_htfft_core(suffix, n, spcc, input_width, twiddle_width, pipelines):
         template_text = f.read()
         template = jinja2.Template(template_text)
     formatted_text = template.render(**params)
-    top_filename = os.path.join(basedir, 'generated', 'htfft{}.core'.format(suffix))
+    generated_directory = os.path.join(basedir, 'generated')
+    if not os.path.exists(generated_directory):
+        os.makedirs(generated_directory)
+    top_filename = os.path.join(generated_directory, 'htfft{}.core'.format(suffix))
     with open(top_filename, 'w') as g:
         g.write(formatted_text)
 
@@ -140,7 +143,7 @@ def get_test_params(n_tests, base_seed=0):
 
 
 @pytest.mark.parametrize(['generation_params', 'test_params'], get_test_params(n_tests=10))
-def test_main(generation_params, test_params):
+def test_htfft(generation_params, test_params):
     suffix = generation_params['suffix']
     working_directory = os.path.abspath(os.path.join('temp', 'test_htfft_{}'.format(suffix)))
     if os.path.exists(working_directory):
