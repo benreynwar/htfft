@@ -23,9 +23,8 @@ def generate_htfft(n, size, input_width, twiddle_width, suffix):
     for stage_index in range(n_stages):
         stage_n = size * pow(2, stage_index+1)
         stage_ns.append(stage_n)
-        width = input_width + helper.logceil(stage_n)*2
-        stage_filenames.append(
-            stage_gen.generate_stage(stage_n, size, width, twiddle_width, suffix))
+        width = input_width + (helper.logceil(stage_n)-1)*2
+        stage_filenames += stage_gen.generate_stage(stage_n, size, width, twiddle_width, suffix)
 
     params = {
         'n': n,
@@ -34,6 +33,7 @@ def generate_htfft(n, size, input_width, twiddle_width, suffix):
         'output_width': output_width,
         'suffix': suffix,
         'stage_ns': stage_ns,
+        'n_stages': len(stage_ns),
         }
     template_filename = os.path.join(basedir, 'htfft.vhd')
     with open(template_filename, 'r') as f:

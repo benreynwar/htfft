@@ -20,12 +20,16 @@ entity initial_memory is
     reset: in std_logic;
     i_beforefirst: in std_logic;
     i_data: in std_logic_vector(WIDTH*SPCC-1 downto 0);
+    o_beforefirst: out std_logic;
     o_data: out std_logic_vector(WIDTH*SPCC-1 downto 0)
     );
 
 end entity;
 
 architecture arch of initial_memory is
+  constant LATENCY: positive := count_pipeline_length(BARREL_SHIFTER_PIPELINE)*2+1+N/SPCC;
+
+  signal i_beforefirst_slv: std_logic_vector(0 downto 0); 
   signal i_addressreversed: std_logic;
   signal i_address: unsigned(logceil(N/SPCC)-1 downto 0);
   constant ADDRESS_WIDTH: positive := logceil(N/SPCC);
@@ -58,6 +62,8 @@ architecture arch of initial_memory is
 
   constant BARREL_SHIFTER_PIPELINE_LENGTH: natural := count_pipeline_length(
     BARREL_SHIFTER_PIPELINE);
+
+  signal o_beforefirst_slv: std_logic_vector(0 downto 0); 
 
 begin
 
@@ -182,5 +188,18 @@ begin
       i_data => b_data,
       o_data => o_data
       );
+
+  i_beforefirst_slv(0) <= i_beforefirst;
+  shift_register: entity work.shift_register
+    generic map (
+      WIDTH => 1,
+      LENGTH => LATENCY
+      )
+    port map (
+      clk => clk,
+      i_data => i_beforefirst_slv,
+      o_data => o_beforefirst_slv
+      );
+  o_beforefirst <= o_beforefirst_slv(0);
       
 end architecture;

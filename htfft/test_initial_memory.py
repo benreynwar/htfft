@@ -35,6 +35,9 @@ async def check_data(dut, width, spcc, n, pipeline_length, sent_queue):
             break
         await triggers.RisingEdge(dut.clk)
     for i in range(pipeline_length):
+        await triggers.ReadOnly()
+        if i == pipeline_length-1:
+            assert dut.o_beforefirst.value == 1
         await triggers.RisingEdge(dut.clk)
     for vector_index in itertools.count():
         received_values = []
@@ -42,6 +45,7 @@ async def check_data(dut, width, spcc, n, pipeline_length, sent_queue):
             await triggers.ReadOnly()
             received_values += conversions.list_of_uints_from_slv(
                 dut.o_data.value.integer, width=width, size=spcc)
+            assert dut.o_beforefirst.value == (1 if chunk_index == n//spcc-1 else 0)
             await triggers.RisingEdge(dut.clk)
         sent_values = []
         for chunk_index in range(n//spcc):

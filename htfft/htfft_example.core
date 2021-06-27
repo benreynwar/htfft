@@ -11,6 +11,7 @@ filesets:
       - memory
       - initial_memory
       - final_memory
+      - htfft_gen
 
 targets:
   default:
@@ -22,8 +23,8 @@ generate:
   htfft_gen:
     generator : htfft_gen
     parameters:
-      suffix: _example
-      n: 8
-      size: 4
-      width: 16
-      twiddle_width: 16
+      suffix: _8_example
+      n: 4
+      size: 2
+      input_width: 32
+      twiddle_width: 32

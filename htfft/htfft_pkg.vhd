@@ -1,6 +1,9 @@
 package htfft_pkg is
   function logceil(value: natural) return integer;
   function count_pipeline_length(pipeline: string) return natural;
+
+  -- The pipeline for the butterflys should be moved to this package.
+  constant BUTTERFLY_LATENCY: natural := 7;
 end package;
 
 package body htfft_pkg is

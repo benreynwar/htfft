@@ -22,13 +22,14 @@ To do
 * [x] Butterfly
 * [x] Unrolled FFT
 * [x] FFT Stage
-* [ ] Initial memory
-* [ ] Final memory
-* [ ] Top level
+* [x] Initial memory
+* [x] Final memory
+* [x] Top level
 * [ ] Documentation
 * [ ] Improve testing
-* [ ] Investigate rounding and precision
+* [x] Investigate rounding and precision
 * [ ] Look for better architectures in literature.
+* [ ] Investigate expected errors in literature.
 
 Architecture
 ------------
@@ -81,17 +82,17 @@ Modules
   * Work in progress.
   * Initial memory and final memory are unimplemented.
  
-- unrolled_fft
+- unrolled fft
   * An unrolled FFT implementation for when N = SIZE.
   * Working but needs work to investigate rounding and optimum precision
     at different stages.  Probably still buggy.
    
-- unrolled_fft_inner
+- unrolled fft inner
   * An internal module of the unrolled_fft. Includes everything except
     for the initial reordering. Used in both the HTFFT and the
     unrolled_fft implementations.
 
-- comb_reordering
+- comb reordering
   * Combinatorial reordering to use with unrolled_fft_inner to make
     unrolled_fft.
    
@@ -109,19 +110,55 @@ Modules
 - memory
   * A basic memory implementation. Used in various places.
  
-- shift_register
+- shift register
   * A basic shift_register implementation. Used in various places.
  
-- htfft_pkg
+- htfft pkg
   * A package with utility functions.
  
-- initial_memory
+- initial memory
   * Does the initial reordering in the HTFFT.
   * Work in progress
   * More [Intial Memory Docs](/docs/initial_memory.md)
    
-- barrel_shifter
+- barrel shifter
   * A barrel shifter implementation.  Used in the initial_memory. Unimplemented.
 
-- final_memory
+- final memory
   * Does the final reordering in the HTFFT.  Unimplemented.
+
+Thinking about Rounding and Precision
+-------------------------------------
+
+- At the moment we extend the width of the complex numbers through the FFT.
+  This is because there is the possibility for sharp peaks to occur if one
+  frequency dominates.
+
+- Alternatively if we thought there would be no sharp peaks we could 
+  reduce the number of bits, and cap the output values from the butterflies
+  to stay within the allowed range.
+
+- For now, it makes sense to keep things simple and just use more bits.
+
+- I think the bits in the twiddle factor should match the bits in the value that
+  it is multiplying.  Am I doing this?
+  
+- Looking at the average error in the output from the FFT.
+
+  | input_width |     16    |       32                          |
+  |-------------|-----------|-----------------------------------|
+  | N=1         | 0.0060    |   0.000023 no noise by definition |
+  | N=4         |           |   0.000050 (bottom 1 bit noise)   |
+  | N=8         | 0.023     |   0.000087 (bottom 1 bit noise)   |
+  | N=16        |           |   0.00014  (bottom 2 bits noise)  |
+  | N=32        |           |   0.00024  (bottom 3 bits noise)  |
+  | N=64        |           |   0.00038  (bottom 4 bits noise)  |
+  | N=128       |           |   0.00056  (bottom 4 bits noise)  |
+  
+  We can clearly remove some precision as we go through the stages, but it would take
+  a bit of experimentation to work out how many bits it's safe to remove.
+  
+  I would have expected the error to scale as sqrt(N) but it's scaling a bit faster.
+  
+  Seems like nothing is horribly broken.  Next step would be to look at the literature
+  a bit to see if there are any tricks I'm missing.

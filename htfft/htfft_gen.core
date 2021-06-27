@@ -5,7 +5,7 @@ description: Generator for a high throughput FFT.
 
 
 generators:
-  stage_gen:
+  htfft_gen:
     interpreter: python
     command: htfft_gen.py
     description : Generates a high throughput FFT.
