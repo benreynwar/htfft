@@ -1,0 +1,18 @@
+CAPI=2:
+
+name : ::final_memory
+description: An final reordering memory for the HTFFT
+
+filesets:
+  default:
+    files:
+      - final_memory.vhd
+    file_type : vhdlSource
+    depend:
+      - memory
+      - htfft_pkg
+
+targets:
+  default:
+    toplevel : final_memory
+    filesets: [default]

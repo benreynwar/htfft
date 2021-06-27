@@ -2,6 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 use work.htfft_pkg.all;
+use work.htfft{{suffix}}_params.all;
 
 entity htfft{{suffix}} is
  port (
@@ -9,35 +10,32 @@ entity htfft{{suffix}} is
    reset: in std_logic;
    -- Indicates this is the first clock cycle of data for this FFT.
    i_first: in std_logic;
-   i_data: in std_logic_vector({{size}}*{{input_width}}-1 downto 0);
+   i_data: in std_logic_vector(SPCC*INPUT_WIDTH-1 downto 0);
    o_first: out std_logic;
-   o_data: out std_logic_vector({{size}}*{{output_width}}-1 downto 0)
+   o_data: out std_logic_vector(SPCC*OUTPUT_WIDTH-1 downto 0)
    );
 end entity;
 
 architecture arch of htfft{{suffix}} is
-  constant INPUT_WIDTH: positive := {{input_width}};
-  constant OUTPUT_WIDTH: positive := {{output_width}};
-  constant N: positive := {{n}};
-  constant SIZE: positive := {{size}};
-  constant R_WIDTH: positive := INPUT_WIDTH + 2*logceil(SIZE);
 
-  constant UNROLLED_FFT_LATENCY: natural := BUTTERFLY_LATENCY * logceil(SIZE);
+  constant R_WIDTH: positive := INPUT_WIDTH + 2*logceil(SPCC);
 
-  signal p_data: std_logic_vector(INPUT_WIDTH*SIZE-1 downto 0);
+  constant UNROLLED_FFT_LATENCY: natural := BUTTERFLY_LATENCY * logceil(SPCC);
+
+  signal p_data: std_logic_vector(INPUT_WIDTH*SPCC-1 downto 0);
 
   signal q_beforefirst: std_logic;
   signal q_beforefirstslv: std_logic_vector(0 downto 0);
-  signal q_data: std_logic_vector(INPUT_WIDTH*SIZE-1 downto 0);
+  signal q_data: std_logic_vector(INPUT_WIDTH*SPCC-1 downto 0);
 
   signal r_reset: std_logic;
   signal r_beforefirstslv: std_logic_vector(0 downto 0);
-  signal r_data: std_logic_vector(R_WIDTH*SIZE-1 downto 0);
+  signal r_data: std_logic_vector(R_WIDTH*SPCC-1 downto 0);
 
   {% for index in range(n_stages+1) %}
   signal r{{loop.index0}}_reset: std_logic;
-  signal r{{loop.index0}}_data_a: std_logic_vector((R_WIDTH+2*{{loop.index0}})*SIZE/2-1 downto 0);
-  signal r{{loop.index0}}_data_b: std_logic_vector((R_WIDTH+2*{{loop.index0}})*SIZE/2-1 downto 0);
+  signal r{{loop.index0}}_data_a: std_logic_vector((R_WIDTH+2*{{loop.index0}})*SPCC/2-1 downto 0);
+  signal r{{loop.index0}}_data_b: std_logic_vector((R_WIDTH+2*{{loop.index0}})*SPCC/2-1 downto 0);
   {% endfor %}
 
   signal o_beforefirst: std_logic;
@@ -58,9 +56,9 @@ begin
   initial_mem: entity work.initial_memory
     generic map (
       WIDTH => INPUT_WIDTH,
-      SPCC => SIZE,
+      SPCC => SPCC,
       N => N,
-      BARREL_SHIFTER_PIPELINE => "11"
+      BARREL_SHIFTER_PIPELINE => BARREL_SHIFTER_PIPELINE
       )
     port map (
       clk => clk,
@@ -72,7 +70,7 @@ begin
       );
   -- Process the data with an unrolled FFT the size of which matches
   -- the number samples arriving per clock cycle.
-  unrolled: entity work.unrolled_fft_inner_{{size}}{{suffix}}
+  unrolled: entity work.unrolled_fft_inner_{{spcc}}{{suffix}}
     port map (
       clk => clk,
       i_data => q_data,
@@ -94,8 +92,8 @@ begin
   -- Process the data with rolled FFT stages (where rolled just means storing
   -- intermediate results in memory, i.e. not unrolled).
   r0_reset <= r_beforefirstslv(0);
-  r0_data_a <= r_data(R_WIDTH*SIZE/2-1 downto 0);
-  r0_data_b <= r_data(R_WIDTH*SIZE-1 downto R_WIDTH*SIZE/2);
+  r0_data_a <= r_data(R_WIDTH*SPCC/2-1 downto 0);
+  r0_data_b <= r_data(R_WIDTH*SPCC-1 downto R_WIDTH*SPCC/2);
   {% for stage_n in stage_ns %}
     stage_{{stage_n}}_inst: entity work.stage_{{stage_n}}{{suffix}}
     port map (
@@ -112,7 +110,7 @@ begin
   final_mem: entity work.final_memory
     generic map (
       WIDTH => OUTPUT_WIDTH,
-      SPCC => SIZE,
+      SPCC => SPCC,
       N => N
       )
     port map (

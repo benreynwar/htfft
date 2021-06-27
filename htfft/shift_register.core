@@ -1,0 +1,14 @@
+CAPI=2:
+
+name : ::shift_register
+description:
+
+filesets:
+  default:
+    files:
+      - shift_register.vhd
+
+targets:
+  default:
+    toplevel : shift_register
+    filesets: [default]

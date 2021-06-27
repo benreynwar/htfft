@@ -1,0 +1,20 @@
+CAPI=2:
+
+name : ::initial_memory
+description: An initial reordering memory for the HTFFT
+
+filesets:
+  default:
+    files:
+      - initial_memory.vhd
+    file_type : vhdlSource
+    depend:
+      - barrel_shifter
+      - shift_register
+      - memory
+      - htfft_pkg
+
+targets:
+  default:
+    toplevel : initial_memory
+    filesets: [default]

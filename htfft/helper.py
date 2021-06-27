@@ -2,6 +2,7 @@ import os
 import math
 import cmath
 import subprocess
+import json
 
 import yaml
 from cocotb_test.run import run
@@ -74,14 +75,20 @@ def get_files(core_name, working_directory, verbose=False, config_filename=None)
 
 
 def run_core(working_directory, core_name, top_name, test_module_name,
-             wave=False, generics=None, extra_env=None):
+             wave=False, generics=None, extra_env=None, test_params=None):
     filenames = get_files(core_name, working_directory, verbose=True)
     run_with_cocotb(working_directory, filenames, top_name, test_module_name,
-                    wave, generics, extra_env=extra_env)
+                    wave, generics, extra_env=extra_env, test_params=test_params)
+
+
+def get_test_params():
+    with open(os.environ['HTFFT_TEST_PARAMS_FILENAME'], 'r') as f:
+        params = json.load(f)
+    return params
 
 
 def run_with_cocotb(working_directory, filenames, top_name, test_module_name, wave=False,
-                    generics={}, extra_env={}):
+                    generics={}, extra_env={}, test_params=None):
     os.environ['SIM'] = 'ghdl'
     if wave:
         simulation_args = ['--wave=dump.ghw']
@@ -90,6 +97,11 @@ def run_with_cocotb(working_directory, filenames, top_name, test_module_name, wa
     if generics:
         for key, value in generics.items():
             simulation_args.append('-g{}={}'.format(key, value))
+    if test_params is not None:
+        test_params_filename = os.path.join(working_directory, 'test_params.json')
+        with open(test_params_filename, 'w') as f:
+            f.write(json.dumps(test_params))
+    os.environ['HTFFT_TEST_PARAMS_FILENAME'] = test_params_filename
     pwd = os.getcwd()
     os.chdir(working_directory)
     run(

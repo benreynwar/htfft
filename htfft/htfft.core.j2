@@ -1,0 +1,32 @@
+CAPI=2:
+
+name : ::htfft{{suffix}}
+description: An example using the HTFFT generator.
+
+filesets:
+  default:
+    depend:
+      - htfft_pkg
+      - butterfly
+      - memory
+      - initial_memory
+      - final_memory
+      - htfft_gen
+
+targets:
+  default:
+    generate : [htfft{{suffix}}_gen]
+    toplevel : htfft{{suffix}}
+    filesets: [default]
+
+generate:
+  htfft{{suffix}}_gen:
+    generator : htfft_gen
+    parameters:
+      suffix: {{suffix}}
+      n: {{n}}
+      spcc: {{spcc}}
+      input_width: {{input_width}}
+      twiddle_width: {{twiddle_width}}
+      pipelines:
+        barrel_shifter: "{{pipelines.barrel_shifter}}"
