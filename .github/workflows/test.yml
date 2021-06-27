@@ -42,4 +42,4 @@ jobs:
         backend: llvm
     - name: Test with pytest
       run: |
-        pytest
+        cd htfft; pytest
