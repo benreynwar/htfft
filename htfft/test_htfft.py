@@ -144,14 +144,12 @@ def get_test_params(n_tests, base_seed=0):
 
 @pytest.mark.parametrize(['generation_params', 'test_params'], get_test_params(n_tests=10))
 def test_htfft(generation_params, test_params):
-    assert os.path.exists('fusesoc.conf')
     suffix = generation_params['suffix']
     working_directory = os.path.abspath(os.path.join('temp', 'test_htfft_{}'.format(suffix)))
     if os.path.exists(working_directory):
         shutil.rmtree(working_directory)
     os.makedirs(working_directory)
     make_htfft_core(**generation_params)
-    assert os.path.exists('generated')
     core_name = 'htfft' + suffix
     top_name = 'htfft' + suffix
     test_module_name = 'test_htfft'
