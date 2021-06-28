@@ -3,7 +3,7 @@ import os
 import jinja2
 from fusesoc.capi2.generator import Generator
 
-from htfft import helper, conversions, unrolled_fft_gen, stage_gen
+from htfft import helper, unrolled_fft_gen, stage_gen
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 

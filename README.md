@@ -1,5 +1,7 @@
 # High Throughput FFT Implementation
 
+![CI status](https://github.com/benreynwar/htfft/actions/workflows/main.yml/badge.svg)
+
 An implementation designed to work for large FFT sizes, high clock frequencies,
 and with multiple samples consumed every clock cycle.
 **This is a work in progress, and is not yet functional.**

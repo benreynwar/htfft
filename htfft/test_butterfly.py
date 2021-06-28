@@ -8,11 +8,11 @@ from htfft import helper, conversions
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+
 @cocotb.test()
-async def test_unrolled_fft(dut):
+async def butterfly_test(dut):
     seed = 0
     rnd = Random(seed)
-    values = [1, 0]
     width = int(dut.width.value)
     twiddle_width = int(dut.twiddle_width.value)
     # Allow errors equal to twice the spacing between representatable
@@ -63,6 +63,7 @@ def main():
         }
     helper.run_core(working_directory, core_name, top_name, test_module_name,
                     wave=wave, generics=generics)
+
 
 if __name__ == '__main__':
     main()

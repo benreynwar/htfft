@@ -12,7 +12,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 @cocotb.test()
-async def test_unrolled_fft(dut):
+async def unrolled_fft_test(dut):
     seed = 0
     rnd = Random(seed)
     size = int(dut.size.value)
@@ -24,7 +24,7 @@ async def test_unrolled_fft(dut):
     allowed_diff = fudge * 1/pow(2, input_width//2 - 2)
     for i in range(1):
         values = [helper.random_complex(rnd, input_width)
-                for i in range(size)]
+                  for i in range(size)]
         await triggers.RisingEdge(dut.clk)
         values_as_slv = conversions.list_of_complex_to_slv(values, input_width)
         dut.i_data <= values_as_slv

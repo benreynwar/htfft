@@ -10,7 +10,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 @cocotb.test()
-async def test_comb_reordering(dut):
+async def comb_reordering_test(dut):
     seed = 0
     rnd = Random(seed)
     size = int(dut.size.value)
@@ -42,6 +42,7 @@ def main():
         }
     helper.run_core(working_directory, core_name, top_name, test_module_name,
                     wave=wave, generics=generics)
+
 
 if __name__ == '__main__':
     main()

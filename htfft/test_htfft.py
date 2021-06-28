@@ -18,7 +18,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 def get_expected_discrepancy(input_width, n):
     component_width = input_width/2
     n_increments = pow(2, component_width)
-    increment_size = 2/n_increments # because we go from -1 to 1
+    increment_size = 2/n_increments  # because we go from -1 to 1
     average_error = increment_size*0.75
     # Empirically each time N doubles, error goes up by 1.6
     expected_error = pow(1.6, math.log(n)/math.log(2)) * average_error
@@ -28,16 +28,17 @@ def get_expected_discrepancy(input_width, n):
 async def send_data(rnd, dut, sent_queue, n, spcc, input_width):
     while True:
         values = [helper.random_complex(rnd, input_width)
-                for i in range(n)]
+                  for i in range(n)]
         sent_queue.append(values)
         lumps = [values[index*spcc: (index+1)*spcc]
-                for index in range(n//spcc)]
+                 for index in range(n//spcc)]
         dut.i_first <= 1
         for lump in lumps:
             lump_as_slv = conversions.list_of_complex_to_slv(lump, input_width)
             dut.i_data <= lump_as_slv
             await triggers.RisingEdge(dut.clk)
             dut.i_first <= 0
+
 
 async def check_data(rnd, dut, sent_queue, n, spcc, input_width, output_width, n_vectors):
     assert n % spcc == 0
@@ -63,13 +64,14 @@ async def check_data(rnd, dut, sent_queue, n, spcc, input_width, output_width, n
         expected_data = fft.fft(sent_data)
         assert len(received_data) == len(expected_data)
         assert len(received_data) == n
-        discrepancy = pow(sum(pow(abs(a-b), 2) for a, b in zip(received_data, expected_data))/n, 0.5)
+        discrepancy = pow(sum(pow(abs(a-b), 2)
+                              for a, b in zip(received_data, expected_data))/n, 0.5)
         discrepancies.append(discrepancy)
         assert discrepancy < 2*expected_discrepancy
 
 
 @cocotb.test()
-async def test_htfft(dut):
+async def htfft_test(dut):
     test_params = helper.get_test_params()
     spcc = test_params['spcc']
     n = test_params['n']
@@ -103,7 +105,10 @@ def make_htfft_core(suffix, n, spcc, input_width, twiddle_width, pipelines):
         template_text = f.read()
         template = jinja2.Template(template_text)
     formatted_text = template.render(**params)
-    top_filename = os.path.join(basedir, 'generated', 'htfft{}.core'.format(suffix))
+    generated_directory = os.path.join(basedir, 'generated')
+    if not os.path.exists(generated_directory):
+        os.makedirs(generated_directory)
+    top_filename = os.path.join(generated_directory, 'htfft{}.core'.format(suffix))
     with open(top_filename, 'w') as g:
         g.write(formatted_text)
 
@@ -138,7 +143,7 @@ def get_test_params(n_tests, base_seed=0):
 
 
 @pytest.mark.parametrize(['generation_params', 'test_params'], get_test_params(n_tests=10))
-def test_main(generation_params, test_params):
+def test_htfft(generation_params, test_params):
     suffix = generation_params['suffix']
     working_directory = os.path.abspath(os.path.join('temp', 'test_htfft_{}'.format(suffix)))
     if os.path.exists(working_directory):

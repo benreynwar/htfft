@@ -60,7 +60,7 @@ async def check_data(dut, width, spcc, n, sent_queue):
 
 
 @cocotb.test()
-async def test_final_memory(dut):
+async def final_memory_test(dut):
     seed = 0
     rnd = Random(seed)
 
@@ -107,6 +107,7 @@ def main():
     wave = True
     helper.run_core(working_directory, core_name, top_name, test_module_name,
                     wave=wave, generics=generics, extra_env={})
+
 
 if __name__ == '__main__':
     main()

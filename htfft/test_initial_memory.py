@@ -60,7 +60,7 @@ async def check_data(dut, width, spcc, n, pipeline_length, sent_queue):
 
 
 @cocotb.test()
-async def test_initial_memory(dut):
+async def initial_memory_test(dut):
     seed = 0
     rnd = Random(seed)
 
@@ -122,6 +122,7 @@ def main():
     env = {"TEST_INITIAL_MEMORY_BARREL_SHIFTER_PIPELINE_LENGTH": generics['barrel_shifter_pipeline']}
     helper.run_core(working_directory, core_name, top_name, test_module_name,
                     wave=wave, generics=generics, extra_env=env)
+
 
 if __name__ == '__main__':
     main()

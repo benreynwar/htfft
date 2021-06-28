@@ -31,7 +31,7 @@ def reverse_bits(value, n_bits):
     return new_value
 
 
-def random_complex(rnd, width):
+def random_complex(rnd, width, exact=False):
     """
     Get a random complex number with amplitude less than or
     equal to 1.
@@ -39,10 +39,15 @@ def random_complex(rnd, width):
     represented with that width.
     """
     while True:
-        max_mag = pow(2, width//2 - 2)
-        real_int = rnd.randint(-max_mag, max_mag)
-        imag_int = rnd.randint(-max_mag, max_mag)
-        comp = (real_int/max_mag + (0+1j)*imag_int/max_mag)
+        if exact:
+            max_mag = pow(2, width//2 - 2)
+            real_int = rnd.randint(-max_mag, max_mag)
+            imag_int = rnd.randint(-max_mag, max_mag)
+            comp = (real_int/max_mag + (0+1j)*imag_int/max_mag)
+        else:
+            real_part = rnd.random()*2-1
+            imag_part = rnd.random()*2-1
+            comp = real_part + (0+1j)*imag_part
         if abs(comp) <= 1:
             break
     return comp
@@ -62,9 +67,6 @@ def get_files(core_name, working_directory, verbose=False, config_filename=None)
     subprocess.call(cmd, cwd=working_directory)
     output_dir = os.path.join(
         working_directory, 'build', '{}_0'.format(core_name), 'default-vivado')
-    #if not os.path.exists(output_dir):
-    #    output_dir = os.path.join(
-    #        working_directory, 'build', '{}_0'.format(core_name), 'bld-vivado')
     yaml_filename = os.path.join(output_dir, '{}_0.eda.yml'.format(core_name))
     with open(yaml_filename, 'r') as f:
         data = yaml.load(f.read(), Loader=yaml.Loader)

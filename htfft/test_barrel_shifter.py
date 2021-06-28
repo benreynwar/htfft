@@ -40,7 +40,7 @@ async def check_data(dut, size, shift_increment, pipeline_length):
 
 
 @cocotb.test()
-async def test_barrel_shifter(dut):
+async def barrel_shifter_test(dut):
     seed = 0
     rnd = Random(seed)
 
@@ -89,6 +89,7 @@ def main():
     env = {"TEST_BARREL_SHIFTER_PIPELINE_LENGTH": generics['pipeline']}
     helper.run_core(working_directory, core_name, top_name, test_module_name,
                     wave=wave, generics=generics, extra_env=env)
+
 
 if __name__ == '__main__':
     main()

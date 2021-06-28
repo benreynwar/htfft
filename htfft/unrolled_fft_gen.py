@@ -58,7 +58,7 @@ def generate_unrolled_fft(size, input_width, twiddle_width, suffix):
     with open(output_filename, 'w') as g:
         g.write(formatted_text)
     return filenames + [output_filename]
-    
+
 
 class UnrolledFFTGenerator(Generator):
 
