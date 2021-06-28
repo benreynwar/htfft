@@ -3,6 +3,7 @@ import shutil
 from random import Random
 import collections
 
+import pytest
 import cocotb
 from cocotb import clock, triggers
 
@@ -39,21 +40,44 @@ async def check_data(dut, size, shift_increment, pipeline_length):
         await triggers.RisingEdge(dut.clk)
 
 
+def get_test_params(n_tests, base_seed=0):
+    for test_index in range(n_tests):
+        seed = (base_seed + test_index) * 4353453
+        rnd = Random(seed)
+        size = rnd.choice([8, 16, 32, 64, 128, 256])
+        shift_increment = rnd.choice([3, 5, 8])
+        pipeline = ''.join(rnd.choice(['0', '1'])
+                           for i in range(helper.logceil(size)+1))
+        generics = {
+            'size': size,
+            'shift_increment': shift_increment,
+            'pipeline': pipeline,
+            }
+        n_data = 100
+        test_params = {
+            'test_index': test_index,
+            'n_data': n_data,
+            'seed': seed,
+            'core_name': 'barrel_shifter',
+            'top_name': 'barrel_shifter',
+            'test_module_name': 'test_barrel_shifter',
+            'generics': generics,
+            }
+        yield test_params
+
+
 @cocotb.test()
 async def barrel_shifter_test(dut):
-    seed = 0
-    rnd = Random(seed)
+    test_params = helper.get_test_params()
+    generics = test_params['generics']
+    rnd = Random(test_params['seed'])
+    n_data = test_params['n_data']
 
     cocotb.fork(clock.Clock(dut.clk, 2, 'ns').start())
 
-    shift_increment = int(dut.shift_increment.value)
-    size = int(dut.size.value)
-
-    # Ghdl doesn't support getting string generics yet.
-    # pipeline = dut.pipeline.value
-    # FIXME: Environment variables are a totally sensible way of passing the
-    # pipeline to the test.
-    pipeline = os.environ["TEST_BARREL_SHIFTER_PIPELINE_LENGTH"]
+    shift_increment = generics['shift_increment']
+    size = generics['size']
+    pipeline = generics['pipeline']
     pipeline_length = sum(int(s) for s in pipeline)
 
     cocotb.fork(send_data(
@@ -68,28 +92,35 @@ async def barrel_shifter_test(dut):
         shift_increment=shift_increment,
         pipeline_length=pipeline_length,
     ))
-    for i in range(100):
+    for i in range(n_data + pipeline_length):
         await triggers.RisingEdge(dut.clk)
 
 
-def main():
-    working_directory = os.path.abspath('temp_test_barrel_shifter')
+def run_test(test_params, wave=False):
+    working_directory = os.path.abspath(os.path.join(
+        'temp', 'test_barrel_shifter_{}'.format(test_params['test_index'])))
     if os.path.exists(working_directory):
         shutil.rmtree(working_directory)
     os.makedirs(working_directory)
-    core_name = 'barrel_shifter'
-    top_name = 'barrel_shifter'
-    test_module_name = 'test_barrel_shifter'
-    generics = {
-        'size': 64,
-        'shift_increment': 5,
-        'pipeline': "1010101",
-        }
-    wave = True
-    env = {"TEST_BARREL_SHIFTER_PIPELINE_LENGTH": generics['pipeline']}
-    helper.run_core(working_directory, core_name, top_name, test_module_name,
-                    wave=wave, generics=generics, extra_env=env)
+    helper.run_core(
+        working_directory,
+        core_name=test_params['core_name'],
+        top_name=test_params['top_name'],
+        test_module_name=test_params['test_module_name'],
+        generics=test_params['generics'],
+        wave=wave,
+        test_params=test_params)
+
+
+@pytest.mark.parametrize('test_params', get_test_params(n_tests=10))
+def test_htfft(test_params):
+    run_test(test_params, wave=False)
+
+
+def run_tests(n_tests=10):
+    for test_params in get_test_params(n_tests=n_tests):
+        run_test(test_params, wave=False)
 
 
 if __name__ == '__main__':
-    main()
+    run_tests()

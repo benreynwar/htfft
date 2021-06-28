@@ -73,9 +73,10 @@ async def check_data(rnd, dut, sent_queue, n, spcc, input_width, output_width, n
 @cocotb.test()
 async def htfft_test(dut):
     test_params = helper.get_test_params()
-    spcc = test_params['spcc']
-    n = test_params['n']
-    input_width = test_params['input_width']
+    generation_params = test_params['generation']
+    spcc = generation_params['spcc']
+    n = generation_params['n']
+    input_width = generation_params['input_width']
     n_vectors = test_params['n_vectors']
     output_width = input_width + 2*helper.logceil(n)
     seed = test_params['seed']
@@ -136,42 +137,41 @@ def get_test_params(n_tests, base_seed=0):
                 },
             }
         n_vectors = 10
-        test_params = generation_params.copy()
-        test_params['n_vectors'] = n_vectors
-        test_params['seed'] = seed
-        yield generation_params, test_params
+        test_params = {
+            'n_vectors': n_vectors,
+            'seed': seed,
+            'core_name': 'htfft' + suffix,
+            'top_name': 'htfft' + suffix,
+            'test_module_name': 'test_htfft',
+            'generation': generation_params,
+            }
+        yield test_params
 
 
-@pytest.mark.parametrize(['generation_params', 'test_params'], get_test_params(n_tests=10))
-def test_htfft(generation_params, test_params):
-    suffix = generation_params['suffix']
+def run_test(test_params, wave=False):
+    suffix = test_params['generation']['suffix']
     working_directory = os.path.abspath(os.path.join('temp', 'test_htfft_{}'.format(suffix)))
     if os.path.exists(working_directory):
         shutil.rmtree(working_directory)
     os.makedirs(working_directory)
-    make_htfft_core(**generation_params)
-    core_name = 'htfft' + suffix
-    top_name = 'htfft' + suffix
-    test_module_name = 'test_htfft'
-    wave = False
-    helper.run_core(working_directory, core_name, top_name, test_module_name, wave=wave,
-                    test_params=test_params)
+    make_htfft_core(**test_params['generation'])
+    helper.run_core(
+        working_directory,
+        core_name=test_params['core_name'],
+        top_name=test_params['top_name'],
+        test_module_name=test_params['test_module_name'],
+        wave=wave,
+        test_params=test_params)
+
+
+@pytest.mark.parametrize('test_params', get_test_params(n_tests=10))
+def test_htfft(test_params):
+    run_test(test_params, wave=False)
 
 
 def run_tests(n_tests=10):
-    working_directory = os.path.abspath('temp_test_htfft')
-    if os.path.exists(working_directory):
-        shutil.rmtree(working_directory)
-    os.makedirs(working_directory)
-    for generation_params, test_params in get_test_params(n_tests=n_tests):
-        suffix = generation_params['suffix']
-        make_htfft_core(**generation_params)
-        core_name = 'htfft' + suffix
-        top_name = 'htfft' + suffix
-        test_module_name = 'test_htfft'
-        wave = True
-        helper.run_core(working_directory, core_name, top_name, test_module_name, wave=wave,
-                        test_params=test_params)
+    for test_params in get_test_params(n_tests=n_tests):
+        run_test(test_params, wave=False)
 
 
 if __name__ == '__main__':
