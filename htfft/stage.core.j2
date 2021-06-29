@@ -1,0 +1,28 @@
+CAPI=2:
+
+name : ::stage_{{n}}{{suffix}}
+description: A stage of the htfft module.
+
+filesets:
+  default:
+    depend:
+      - htfft_pkg
+      - butterfly
+      - memory
+      - stage_gen
+
+targets:
+  default:
+    generate : [stage_{{n}}{{suffix}}_gen]
+    toplevel : stage_{{n}}{{suffix}}
+    filesets: [default]
+
+generate:
+  stage_{{n}}{{suffix}}_gen:
+    generator : stage_gen
+    parameters:
+      suffix: {{suffix}}
+      n: {{n}}
+      size: {{size}}
+      width: {{width}}
+      twiddle_width: {{twiddle_width}}
