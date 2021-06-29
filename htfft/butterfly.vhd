@@ -86,6 +86,8 @@ architecture arch of butterfly is
   signal s_d: std_logic_vector(WIDTH+2-1 downto 0);
 begin
 
+  assert WIDTH mod 2 = 0 severity failure;
+
   yes_reg_i_p: if REG_I_P generate
     process(clk)
     begin

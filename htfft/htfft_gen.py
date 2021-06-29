@@ -73,6 +73,28 @@ class HTFFTGenerator(Generator):
         self.add_files(output_filenames, file_type='vhdlSource')
 
 
+def make_htfft_core(directory, suffix, n, spcc, input_width, twiddle_width, pipelines):
+    """
+    Utility function for generating a core file from python.
+    """
+    params = {
+        'suffix': suffix,
+        'n': n,
+        'spcc': spcc,
+        'input_width': input_width,
+        'twiddle_width': twiddle_width,
+        'pipelines': pipelines,
+        }
+    template_filename = os.path.join(basedir, 'htfft.core.j2')
+    with open(template_filename, 'r') as f:
+        template_text = f.read()
+        template = jinja2.Template(template_text)
+    formatted_text = template.render(**params)
+    top_filename = os.path.join(directory, 'htfft{}.core'.format(suffix))
+    with open(top_filename, 'w') as g:
+        g.write(formatted_text)
+
+
 if __name__ == '__main__':
     g = HTFFTGenerator()
     g.run()

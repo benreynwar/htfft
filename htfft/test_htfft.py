@@ -11,6 +11,7 @@ import cocotb
 from cocotb import clock, triggers
 
 from htfft import helper, conversions
+import htfft_gen
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -92,28 +93,6 @@ async def htfft_test(dut):
                                  input_width, output_width, n_vectors=n_vectors))
 
 
-def make_htfft_core(suffix, n, spcc, input_width, twiddle_width, pipelines):
-    params = {
-        'suffix': suffix,
-        'n': n,
-        'spcc': spcc,
-        'input_width': input_width,
-        'twiddle_width': twiddle_width,
-        'pipelines': pipelines,
-        }
-    template_filename = os.path.join(basedir, 'htfft.core.j2')
-    with open(template_filename, 'r') as f:
-        template_text = f.read()
-        template = jinja2.Template(template_text)
-    formatted_text = template.render(**params)
-    generated_directory = os.path.join(basedir, 'generated')
-    if not os.path.exists(generated_directory):
-        os.makedirs(generated_directory)
-    top_filename = os.path.join(generated_directory, 'htfft{}.core'.format(suffix))
-    with open(top_filename, 'w') as g:
-        g.write(formatted_text)
-
-
 def get_test_params(n_tests, base_seed=0):
     for test_index in range(n_tests):
         seed = (base_seed + test_index) * 123214
@@ -154,7 +133,10 @@ def run_test(test_params, wave=False):
     if os.path.exists(working_directory):
         shutil.rmtree(working_directory)
     os.makedirs(working_directory)
-    make_htfft_core(**test_params['generation'])
+    generated_directory = os.path.join(basedir, 'generated')
+    if not os.path.exists(generated_directory):
+        os.makedirs(generated_directory)
+    htfft_gen.make_htfft_core(directory=generated_directory, **test_params['generation'])
     helper.run_core(
         working_directory,
         core_name=test_params['core_name'],

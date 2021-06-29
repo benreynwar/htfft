@@ -4,6 +4,7 @@ import itertools
 from random import Random
 import collections
 
+import pytest
 import cocotb
 from cocotb import clock, triggers
 
@@ -56,12 +57,13 @@ async def check_data(dut, width, spcc, n, pipeline_length, sent_queue):
                 index, n_bits=helper.logceil(n))
             expected_values.append(sent_values[reversed_index])
         assert expected_values == received_values
-        print('yay!')
 
 
 @cocotb.test()
 async def initial_memory_test(dut):
-    seed = 0
+    test_params = helper.get_test_params()
+    seed = test_params['seed']
+    generics = test_params['generics']
     rnd = Random(seed)
 
     cocotb.fork(clock.Clock(dut.clk, 2, 'ns').start())
@@ -70,11 +72,7 @@ async def initial_memory_test(dut):
     width = int(dut.width.value)
     spcc = int(dut.spcc.value)
 
-    # Ghdl doesn't support getting string generics yet.
-    # pipeline = dut.pipeline.value
-    # FIXME: Environment variables are a totally sensible way of passing the
-    # pipeline to the test.
-    barrel_shifter_pipeline = os.environ["TEST_INITIAL_MEMORY_BARREL_SHIFTER_PIPELINE_LENGTH"]
+    barrel_shifter_pipeline = generics['barrel_shifter_pipeline']
     barrel_shifter_pipeline_length = sum(int(s) for s in barrel_shifter_pipeline)
     pipeline_length = barrel_shifter_pipeline_length*2+1+fft_size//spcc
     sent_queue = collections.deque()
@@ -103,6 +101,62 @@ async def initial_memory_test(dut):
     for i in range(pipeline_length + fft_size//spcc*100):
         await triggers.RisingEdge(dut.clk)
 
+
+def get_test_params(n_tests, base_seed=0):
+    for test_index in range(n_tests):
+        seed = (base_seed + test_index) * 13987
+        rnd = Random(seed)
+        n = rnd.choice([8, 16, 32, 64, 128, 256])
+        possible_spcc = [spcc for spcc in (2, 4, 8, 16, 32)
+                         if helper.logceil(spcc) <= helper.logceil(n)/2]
+        spcc = rnd.choice(possible_spcc)
+        width = rnd.choice([8, 32])
+        generics = {
+            'n': n,
+            'spcc': spcc,
+            'width': width,
+            'barrel_shifter_pipeline': ''.join(rnd.choice(('0', '1'))
+                                               for i in range(helper.logceil(spcc)+1)),
+            }
+        test_params = {
+            'test_index': test_index,
+            'seed': seed,
+            'core_name': 'initial_memory',
+            'top_name': 'initial_memory',
+            'test_module_name': 'test_initial_memory',
+            'generics': generics,
+            }
+        yield test_params
+
+
+def run_test(test_params, wave=False):
+    working_directory = os.path.abspath(os.path.join(
+        'temp', 'test_initial_memory_{}'.format(test_params['test_index'])))
+    if os.path.exists(working_directory):
+        shutil.rmtree(working_directory)
+    os.makedirs(working_directory)
+    helper.run_core(
+        working_directory,
+        core_name=test_params['core_name'],
+        top_name=test_params['top_name'],
+        test_module_name=test_params['test_module_name'],
+        generics=test_params['generics'],
+        wave=wave,
+        test_params=test_params)
+
+
+@pytest.mark.parametrize('test_params', get_test_params(n_tests=10))
+def test_htfft(test_params):
+    run_test(test_params, wave=False)
+
+
+def run_tests(n_tests=10):
+    for test_params in get_test_params(n_tests=n_tests):
+        run_test(test_params, wave=False)
+
+
+if __name__ == '__main__':
+    run_tests()
 
 def main():
     working_directory = os.path.abspath('temp_test_initial_memory')

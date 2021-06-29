@@ -51,6 +51,27 @@ class StageGenerator(Generator):
         self.add_files(output_filenames, file_type='vhdlSource')
 
 
+def make_stage_core(directory, suffix, n, size, width, twiddle_width):
+    """
+    Utility function for generating a core file from python.
+    """
+    params = {
+        'suffix': suffix,
+        'n': n,
+        'size': size,
+        'width': width,
+        'twiddle_width': twiddle_width,
+        }
+    template_filename = os.path.join(basedir, 'stage.core.j2')
+    with open(template_filename, 'r') as f:
+        template_text = f.read()
+        template = jinja2.Template(template_text)
+    formatted_text = template.render(**params)
+    top_filename = os.path.join(directory, 'stage_{}{}.core'.format(n, suffix))
+    with open(top_filename, 'w') as g:
+        g.write(formatted_text)
+
+
 if __name__ == '__main__':
     g = StageGenerator()
     g.run()
