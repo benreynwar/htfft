@@ -4,11 +4,12 @@ import jinja2
 from fusesoc.capi2.generator import Generator
 
 from htfft import helper, conversions
+import htfft_gen
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
-def generate_stage(n, size, width, twiddle_width, suffix):
+def generate_stage(n, size, width, twiddle_width, suffix, pipelines=None, make_pipeline_pkg=False):
     assert size == pow(2, helper.logceil(size))
 
     twiddle_batches = []
@@ -35,7 +36,13 @@ def generate_stage(n, size, width, twiddle_width, suffix):
     output_filename = 'stage_{}{}.vhd'.format(n, suffix)
     with open(output_filename, 'w') as g:
         g.write(formatted_text)
-    return [output_filename]
+
+    if make_pipeline_pkg:
+        extra_filenames = [htfft_gen.make_pipeline_pkg(suffix, pipelines)]
+    else:
+        extra_filenames = []
+
+    return extra_filenames + [output_filename]
 
 
 class StageGenerator(Generator):
@@ -47,11 +54,13 @@ class StageGenerator(Generator):
             width=self.config['width'],
             twiddle_width=self.config['twiddle_width'],
             suffix=self.config['suffix'],
+            pipelines=self.config.get('pipelines', None),
+            make_pipeline_pkg=self.config.get('make_pipeline_pkg', False),
             )
         self.add_files(output_filenames, file_type='vhdlSource')
 
 
-def make_stage_core(directory, suffix, n, size, width, twiddle_width):
+def make_stage_core(directory, suffix, n, size, width, twiddle_width, pipelines):
     """
     Utility function for generating a core file from python.
     """
@@ -61,6 +70,8 @@ def make_stage_core(directory, suffix, n, size, width, twiddle_width):
         'size': size,
         'width': width,
         'twiddle_width': twiddle_width,
+        'pipelines': pipelines,
+        'make_pipeline_pkg': True,
         }
     template_filename = os.path.join(basedir, 'stage.core.j2')
     with open(template_filename, 'r') as f:

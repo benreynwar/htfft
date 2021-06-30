@@ -3,6 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.htfft_pkg.all;
+use work.htfft{{suffix}}_pipeline.all;
 
 entity stage_{{n}}{{suffix}} is
   port (
@@ -79,8 +80,6 @@ architecture arch of stage_{{n}}{{suffix}} is
        ){% if not loop.last %},{% endif %}{% endfor %}
   );
 
-
-  constant BUTTERFLY_PIPELINE_LENGTH: positive := 7;
 
   signal i_reset_slv: std_logic_vector(0 downto 0);
   signal o_reset_slv: std_logic_vector(0 downto 0);
@@ -177,11 +176,11 @@ begin
       generic map (
         WIDTH => WIDTH,
         TWIDDLE_WIDTH => TWIDDLE_WIDTH,
-        MULT_PIPELINE_LENGTH => 3,
-        REG_I_P => true,
-        REG_Q_R => true,
-        REG_R_S => true,
-        REG_S_O => true
+        MULT_LATENCY => MULT_LATENCY,
+        REG_I_P => BUTTERFLY_I_P,
+        REG_Q_R => BUTTERFLY_Q_R,
+        REG_R_S => BUTTERFLY_R_S,
+        REG_S_O => BUTTERFLY_S_O
       )
       port map (
         clk => clk,
@@ -201,7 +200,7 @@ begin
   sr: entity work.shift_register
     generic map (
       WIDTH => 1,
-      LENGTH => BUTTERFLY_PIPELINE_LENGTH + L/2
+      LENGTH => BUTTERFLY_LATENCY + L/2
       )
     port map (
       clk => clk,

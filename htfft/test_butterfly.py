@@ -23,7 +23,7 @@ async def send_data(rnd, dut, width, sent_queue):
         await triggers.RisingEdge(dut.clk)
 
 
-async def check_data(dut, width, sent_queue, pipeline_length):
+async def check_data(dut, width, sent_queue, latency):
     # Allow errors equal to twice the spacing between representatable
     # complex numbers.
     # FIXME: I think we could improve this with better rounding in the
@@ -38,7 +38,7 @@ async def check_data(dut, width, sent_queue, pipeline_length):
     fudge_factor = 2.5
     allowed_diff = max_output_dev * fudge_factor
     # But sometimes by chance it will be bigger
-    for i in range(pipeline_length):
+    for i in range(latency):
         await triggers.RisingEdge(dut.clk)
     while True:
         await triggers.ReadOnly()
@@ -56,24 +56,28 @@ async def check_data(dut, width, sent_queue, pipeline_length):
         await triggers.RisingEdge(dut.clk)
 
 
+def get_latency(generics):
+    latency = (
+        generics['mult_latency'] +
+        sum(generics['reg_{}'.format(x)]
+            for x in ('i_p', 'q_r', 'r_s', 's_o')))
+    return latency
+
+
 @cocotb.test()
 async def butterfly_test(dut):
     test_params = helper.get_test_params()
     seed = test_params['seed']
     generics = test_params['generics']
     width = generics['width']
-    bool_map = {'true': 1, 'false': 0}
-    pipeline_length = (
-        generics['mult_pipeline_length'] +
-        sum(bool_map[generics['reg_{}'.format(x)]]
-            for x in ('i_p', 'q_r', 'r_s', 's_o')))
+    latency = get_latency(generics)
     rnd = Random(seed)
     cocotb.fork(clock.Clock(dut.clk, 2, 'ns').start())
     await triggers.RisingEdge(dut.clk)
     sent_queue = collections.deque()
     cocotb.fork(send_data(rnd, dut, width, sent_queue))
-    cocotb.fork(check_data(dut, width, sent_queue, pipeline_length))
-    for i in range(test_params['n_data'] + pipeline_length):
+    cocotb.fork(check_data(dut, width, sent_queue, latency))
+    for i in range(test_params['n_data'] + latency):
         await triggers.RisingEdge(dut.clk)
 
 
@@ -85,11 +89,11 @@ def get_test_params(n_tests, base_seed=0):
         generics = {
             'width': width,
             'twiddle_width': width,
-            'mult_pipeline_length': rnd.randint(1, 4),
-            'reg_i_p': rnd.choice(['true', 'false']),
-            'reg_q_r': rnd.choice(['true', 'false']),
-            'reg_r_s': rnd.choice(['true', 'false']),
-            'reg_s_o': rnd.choice(['true', 'false']),
+            'mult_latency': rnd.randint(1, 4),
+            'reg_i_p': rnd.choice([True, False]),
+            'reg_q_r': rnd.choice([True, False]),
+            'reg_r_s': rnd.choice([True, False]),
+            'reg_s_o': rnd.choice([True, False]),
             }
         test_params = {
             'test_index': test_index,
@@ -130,4 +134,4 @@ def run_tests(n_tests=10):
 
 
 if __name__ == '__main__':
-    run_tests()
+    run_tests(n_tests=1, base_seed=0)

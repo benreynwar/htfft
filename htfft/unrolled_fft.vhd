@@ -1,7 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity unrolled_fft_{{size}}{{suffix}} is
+entity unrolled_fft{{suffix}} is
   port (
     clk: in std_logic;
     i_data: in std_logic_vector({{input_width}}*{{size}}-1 downto 0);
@@ -9,7 +9,7 @@ entity unrolled_fft_{{size}}{{suffix}} is
     );
 end entity;
 
-architecture arch of unrolled_fft_{{size}}{{suffix}} is
+architecture arch of unrolled_fft{{suffix}} is
   constant INPUT_WIDTH: positive := {{input_width}};
   constant OUTPUT_WIDTH: positive := INPUT_WIDTH + 2*{{logceil_size}};
   constant SIZE: positive := {{size}};

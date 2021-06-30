@@ -8,6 +8,18 @@ from htfft import helper, unrolled_fft_gen, stage_gen
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
+def make_pipeline_pkg(suffix, pipelines):
+    pipeline_template = os.path.join(basedir, 'htfft_pipeline.vhd')
+    with open(pipeline_template, 'r') as f:
+        template_text = f.read()
+        template = jinja2.Template(template_text)
+    formatted_text = template.render(suffix=suffix, pipelines=pipelines)
+    pipeline_filename = 'htfft{}_pipeline.vhd'.format(suffix)
+    with open(pipeline_filename, 'w') as g:
+        g.write(formatted_text)
+    return pipeline_filename
+
+
 def generate_htfft(n, spcc, input_width, twiddle_width, suffix, pipelines):
     assert spcc == pow(2, helper.logceil(spcc))
     assert n == pow(2, helper.logceil(n))
@@ -34,8 +46,7 @@ def generate_htfft(n, spcc, input_width, twiddle_width, suffix, pipelines):
         'suffix': suffix,
         'stage_ns': stage_ns,
         'n_stages': len(stage_ns),
-        'butterfly_latency': 7,
-        'barrel_shifter_pipeline': pipelines['barrel_shifter'],
+        'pipelines': pipelines,
         }
 
     template_filename = os.path.join(basedir, 'htfft.vhd')
@@ -56,7 +67,9 @@ def generate_htfft(n, spcc, input_width, twiddle_width, suffix, pipelines):
     with open(params_filename, 'w') as g:
         g.write(formatted_text)
 
-    return [params_filename] + unrolled_filenames + stage_filenames + [top_filename]
+    pipeline_filename = make_pipeline_pkg(suffix, pipelines)
+
+    return [params_filename, pipeline_filename] + unrolled_filenames + stage_filenames + [top_filename]
 
 
 class HTFFTGenerator(Generator):

@@ -1,35 +1,30 @@
 CAPI=2:
 
-name : ::htfft{{suffix}}
-description: An example using the HTFFT generator.
+name : ::unrolled_fft{{suffix}}
+description: An unrolled FFT generator.
 
 filesets:
   default:
     depend:
-      - htfft_pkg
       - butterfly
-      - memory
-      - initial_memory
-      - final_memory
-      - htfft_gen
+      - comb_reordering
+      - unrolled_fft
 
 targets:
   default:
-    generate : [htfft{{suffix}}_gen]
-    toplevel : htfft{{suffix}}
+    generate : [unrolled_fft{{suffix}}_gen]
+    toplevel : unrolled_fft{{suffix}}
     filesets: [default]
 
 generate:
-  htfft{{suffix}}_gen:
-    generator : htfft_gen
+  unrolled_fft{{suffix}}_gen:
+    generator : unrolled_fft_gen
     parameters:
       suffix: {{suffix}}
-      n: {{n}}
-      spcc: {{spcc}}
+      size: {{n}}
       input_width: {{input_width}}
-      twiddle_width: {{twiddle_width}}
+      twiddle_width: {{input_width}}
       pipelines:
-        barrel_shifter: "{{pipelines.barrel_shifter}}"
         butterfly:
           mult_latency: {{pipelines.butterfly.mult_latency}}
           reg_i_p: {{pipelines.butterfly.reg_i_p}}

@@ -6,7 +6,7 @@ entity butterfly is
   generic (
     WIDTH: positive;
     TWIDDLE_WIDTH: positive;
-    MULT_PIPELINE_LENGTH: natural;
+    MULT_LATENCY: natural;
     REG_I_P: boolean;
     REG_Q_R: boolean;
     REG_R_S: boolean;
@@ -47,8 +47,8 @@ architecture arch of butterfly is
   end function;
     
 
-  constant PIPELINE_LENGTH_TO_S: natural := bool_to_int(REG_I_P) + bool_to_int(REG_Q_R) + bool_to_int(REG_R_S) +
-                                            MULT_PIPELINE_LENGTH;
+  constant LATENCY_TO_S: natural := bool_to_int(REG_I_P) + bool_to_int(REG_Q_R) + bool_to_int(REG_R_S) +
+                                    MULT_LATENCY;
 
   signal p_b: std_logic_vector(WIDTH-1 downto 0);
   signal p_t: std_logic_vector(TWIDDLE_WIDTH-1 downto 0);
@@ -111,7 +111,7 @@ begin
     generic map (
       A_WIDTH => WIDTH/2,
       B_WIDTH => TWIDDLE_WIDTH/2,
-      PIPELINE_LENGTH => MULT_PIPELINE_LENGTH
+      PIPELINE_LENGTH => MULT_LATENCY
       )
     port map (
       clk => clk,
@@ -123,7 +123,7 @@ begin
     generic map (
       A_WIDTH => WIDTH/2,
       B_WIDTH => TWIDDLE_WIDTH/2,
-      PIPELINE_LENGTH => MULT_PIPELINE_LENGTH
+      PIPELINE_LENGTH => MULT_LATENCY
       )
     port map (
       clk => clk,
@@ -135,7 +135,7 @@ begin
     generic map (
       A_WIDTH => WIDTH/2,
       B_WIDTH => TWIDDLE_WIDTH/2,
-      PIPELINE_LENGTH => MULT_PIPELINE_LENGTH
+      PIPELINE_LENGTH => MULT_LATENCY
       )
     port map (
       clk => clk,
@@ -147,7 +147,7 @@ begin
     generic map (
       A_WIDTH => WIDTH/2,
       B_WIDTH => TWIDDLE_WIDTH/2,
-      PIPELINE_LENGTH => MULT_PIPELINE_LENGTH
+      PIPELINE_LENGTH => MULT_LATENCY
       )
     port map (
       clk => clk,
@@ -206,7 +206,7 @@ begin
   delay_a: entity work.shift_register
     generic map (
       WIDTH => WIDTH,
-      LENGTH => PIPELINE_LENGTH_TO_S
+      LENGTH => LATENCY_TO_S
       )
     port map (
       clk => clk,

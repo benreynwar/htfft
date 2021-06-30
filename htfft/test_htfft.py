@@ -3,7 +3,6 @@ import math
 import shutil
 from random import Random
 import collections
-import jinja2
 import pytest
 
 from numpy import fft
@@ -68,7 +67,7 @@ async def check_data(rnd, dut, sent_queue, n, spcc, input_width, output_width, n
         discrepancy = pow(sum(pow(abs(a-b), 2)
                               for a, b in zip(received_data, expected_data))/n, 0.5)
         discrepancies.append(discrepancy)
-        assert discrepancy < 2*expected_discrepancy
+        assert discrepancy < 2 * expected_discrepancy
 
 
 @cocotb.test()
@@ -113,6 +112,13 @@ def get_test_params(n_tests, base_seed=0):
             'twiddle_width': input_width,
             'pipelines': {
                 'barrel_shifter': barrel_shifter_pipeline,
+                'butterfly': {
+                    'mult_latency': rnd.randint(1, 4),
+                    'reg_i_p': rnd.choice([True, False]),
+                    'reg_q_r': rnd.choice([True, False]),
+                    'reg_r_s': rnd.choice([True, False]),
+                    'reg_s_o': rnd.choice([True, False]),
+                    },
                 },
             }
         n_vectors = 10
@@ -146,13 +152,13 @@ def run_test(test_params, wave=False):
         test_params=test_params)
 
 
-@pytest.mark.parametrize('test_params', get_test_params(n_tests=10))
+@pytest.mark.parametrize('test_params', get_test_params(n_tests=1))
 def test_htfft(test_params):
     run_test(test_params, wave=False)
 
 
-def run_tests(n_tests=10):
-    for test_params in get_test_params(n_tests=n_tests):
+def run_tests(n_tests=10, base_seed=0):
+    for test_params in get_test_params(n_tests=n_tests, base_seed=base_seed):
         run_test(test_params, wave=False)
 
 

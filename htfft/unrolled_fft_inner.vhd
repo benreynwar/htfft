@@ -1,6 +1,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
+use work.htfft{{suffix}}_pipeline.all;
+
 -- Because VHDL recursive instantiation is not well supported by
 -- tools we generate this file for different fft sizes.
 entity unrolled_fft_inner_{{size}}{{suffix}} is
@@ -59,7 +61,6 @@ begin
     a_datachunked(0) <= i_datachunked(0);
     a_datachunked(1) <= i_datachunked(1);
   {% endif %}
-  
 
   loop_butterflys: for bf_index in 0 to SIZE/2-1 generate
     a_dataarray(bf_index) <= a_datachunked(0)((bf_index+1)*INTERMED_WIDTH-1 downto bf_index*INTERMED_WIDTH);
@@ -68,11 +69,11 @@ begin
       generic map (
         WIDTH => INTERMED_WIDTH,
         TWIDDLE_WIDTH => TWIDDLE_WIDTH,
-        MULT_PIPELINE_LENGTH => 3,
-        REG_I_P => true,
-        REG_Q_R => true,
-        REG_R_S => true,
-        REG_S_O => true
+        MULT_LATENCY => MULT_LATENCY,
+        REG_I_P => BUTTERFLY_I_P,
+        REG_Q_R => BUTTERFLY_Q_R,
+        REG_R_S => BUTTERFLY_R_S,
+        REG_S_O => BUTTERFLY_S_O
       )
       port map (
         clk => clk,

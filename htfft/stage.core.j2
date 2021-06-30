@@ -26,3 +26,11 @@ generate:
       size: {{size}}
       width: {{width}}
       twiddle_width: {{twiddle_width}}
+      pipelines:
+        butterfly:
+          mult_latency: {{pipelines.butterfly.mult_latency}}
+          i_p: {{pipelines.butterfly.i_p}}
+          q_r: {{pipelines.butterfly.q_r}}
+          r_s: {{pipelines.butterfly.r_s}}
+          s_o: {{pipelines.butterfly.s_o}}
+      make_pipeline_pkg: {{make_pipeline_pkg}}

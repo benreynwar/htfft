@@ -169,6 +169,15 @@ def get_test_params(n_tests, base_seed=0):
             'size': spcc,
             'width': width,
             'twiddle_width': width,
+            'pipelines': {
+                'butterfly': {
+                    'mult_latency': rnd.randint(1, 4),
+                    'reg_i_p': rnd.choice([True, False]),
+                    'reg_q_r': rnd.choice([True, False]),
+                    'reg_r_s': rnd.choice([True, False]),
+                    'reg_s_o': rnd.choice([True, False]),
+                    },
+                },
             }
         n_vectors = 10
         test_params = {

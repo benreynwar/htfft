@@ -3,6 +3,7 @@ use ieee.std_logic_1164.all;
 
 use work.htfft_pkg.all;
 use work.htfft{{suffix}}_params.all;
+use work.htfft{{suffix}}_pipeline.all;
 
 entity htfft{{suffix}} is
  port (
