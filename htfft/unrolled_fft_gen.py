@@ -9,17 +9,17 @@ from htfft import htfft_gen
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
-def generate_unrolled_fft_inner(size, input_width, twiddle_width, suffix):
+def generate_unrolled_fft_inner(size, input_width, suffix):
     assert size == pow(2, helper.logceil(size))
 
     if size > 2:
-        smaller_filenames = generate_unrolled_fft_inner(size//2, input_width, twiddle_width, suffix)
+        smaller_filenames = generate_unrolled_fft_inner(size//2, input_width, suffix)
     else:
         smaller_filenames = []
 
     # Increasing the twiddle width with the other butterfly inputs.
     # Doesn't seem to help much, but probably worth doing.
-    used_twiddle_width = twiddle_width + 2*(helper.logceil(size)-1)
+    used_twiddle_width = input_width + 2*(helper.logceil(size)-1)
 
     twiddles = [conversions.int_to_str(conversions.complex_to_slv(
         helper.get_twiddle(position, size), used_twiddle_width), used_twiddle_width)
@@ -45,8 +45,8 @@ def generate_unrolled_fft_inner(size, input_width, twiddle_width, suffix):
     return smaller_filenames + [output_filename]
 
 
-def generate_unrolled_fft(size, input_width, twiddle_width, suffix, pipelines):
-    filenames = generate_unrolled_fft_inner(size, input_width, twiddle_width, suffix)
+def generate_unrolled_fft(size, input_width, suffix, pipelines):
+    filenames = generate_unrolled_fft_inner(size, input_width, suffix)
     with open(os.path.join(basedir, 'unrolled_fft.vhd')) as f:
         template_text = f.read()
         template = jinja2.Template(template_text)
@@ -73,14 +73,13 @@ class UnrolledFFTGenerator(Generator):
         output_filenames = generate_unrolled_fft(
             size=self.config['size'],
             input_width=self.config['input_width'],
-            twiddle_width=self.config['twiddle_width'],
             suffix=self.config['suffix'],
             pipelines=self.config['pipelines'],
             )
         self.add_files(output_filenames, file_type='vhdlSource')
 
 
-def make_unrolled_fft_core(directory, suffix, n, input_width, twiddle_width, pipelines):
+def make_unrolled_fft_core(directory, suffix, n, input_width, pipelines):
     """
     Utility function for generating a core file from python.
     """
@@ -88,7 +87,6 @@ def make_unrolled_fft_core(directory, suffix, n, input_width, twiddle_width, pip
         'suffix': suffix,
         'n': n,
         'input_width': input_width,
-        'twiddle_width': twiddle_width,
         'pipelines': pipelines,
         }
     template_filename = os.path.join(basedir, 'unrolled_fft.core.j2')

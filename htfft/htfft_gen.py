@@ -39,14 +39,14 @@ def make_pipeline_pkg(suffix, pipelines):
     return pipeline_filename
 
 
-def generate_htfft(n, spcc, input_width, twiddle_width, suffix, pipelines):
+def generate_htfft(n, spcc, input_width, suffix, pipelines):
     assert spcc == pow(2, helper.logceil(spcc))
     assert n == pow(2, helper.logceil(n))
 
     output_width = 2*helper.logceil(n) + input_width
 
     unrolled_filenames = unrolled_fft_gen.generate_unrolled_fft_inner(
-        spcc, input_width, twiddle_width, suffix)
+        spcc, input_width, suffix)
 
     n_stages = helper.logceil(n//spcc)
     stage_filenames = []
@@ -55,7 +55,7 @@ def generate_htfft(n, spcc, input_width, twiddle_width, suffix, pipelines):
         stage_n = spcc * pow(2, stage_index+1)
         stage_ns.append(stage_n)
         width = input_width + (helper.logceil(stage_n)-1)*2
-        stage_filenames += stage_gen.generate_stage(stage_n, spcc, width, twiddle_width, suffix)
+        stage_filenames += stage_gen.generate_stage(stage_n, spcc, width, suffix)
 
     params = {
         'n': n,
@@ -98,14 +98,13 @@ class HTFFTGenerator(Generator):
             n=self.config['n'],
             spcc=self.config['spcc'],
             input_width=self.config['input_width'],
-            twiddle_width=self.config['twiddle_width'],
             suffix=self.config['suffix'],
             pipelines=self.config['pipelines'],
             )
         self.add_files(output_filenames, file_type='vhdlSource')
 
 
-def make_htfft_core(directory, suffix, n, spcc, input_width, twiddle_width, pipelines):
+def make_htfft_core(directory, suffix, n, spcc, input_width, pipelines):
     """
     Utility function for generating a core file from python.
     """
@@ -114,7 +113,6 @@ def make_htfft_core(directory, suffix, n, spcc, input_width, twiddle_width, pipe
         'n': n,
         'spcc': spcc,
         'input_width': input_width,
-        'twiddle_width': twiddle_width,
         'pipelines': pipelines,
         }
     template_filename = os.path.join(basedir, 'htfft.core.j2')

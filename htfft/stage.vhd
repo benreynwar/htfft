@@ -24,7 +24,6 @@ end entity;
 architecture arch of stage_{{n}}{{suffix}} is
   constant N: positive := {{n}};
   constant WIDTH: positive := {{width}};
-  constant TWIDDLE_WIDTH: positive := {{twiddle_width}};
   constant SIZE: positive := {{size}};
   constant OUTPUT_WIDTH: positive := WIDTH + 2;
   constant L: positive := N/SIZE;
@@ -51,7 +50,7 @@ architecture arch of stage_{{n}}{{suffix}} is
   signal toread_valid_b: std_logic;
   signal toread_address: unsigned(logceil(L/2)-1 downto 0);
 
-  subtype t_twiddle is std_logic_vector(TWIDDLE_WIDTH-1 downto 0);
+  subtype t_twiddle is std_logic_vector(WIDTH-1 downto 0);
   type array_of_twiddles is array(natural range <>) of t_twiddle;
   signal fromread_data_a: std_logic_vector(SIZE*WIDTH/2-1 downto 0);
   signal fromread_data_b: std_logic_vector(SIZE*WIDTH/2-1 downto 0);
@@ -221,7 +220,7 @@ begin
     bf: entity work.butterfly
       generic map (
         WIDTH => WIDTH,
-        TWIDDLE_WIDTH => TWIDDLE_WIDTH,
+        TWIDDLE_WIDTH => WIDTH,
         MULT_LATENCY => MULT_LATENCY,
         REG_I_P => BUTTERFLY_I_P,
         REG_Q_R => BUTTERFLY_Q_R,

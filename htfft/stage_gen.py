@@ -9,7 +9,7 @@ import htfft_gen
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
-def generate_stage(n, size, width, twiddle_width, suffix, pipelines=None, make_pipeline_pkg=False):
+def generate_stage(n, size, width, suffix, pipelines=None, make_pipeline_pkg=False):
     assert size == pow(2, helper.logceil(size))
 
     twiddle_batches = []
@@ -17,14 +17,13 @@ def generate_stage(n, size, width, twiddle_width, suffix, pipelines=None, make_p
     for batch_index in range(n//size):
         base_index = batch_index * batch_size
         twiddles = [conversions.int_to_str(conversions.complex_to_slv(
-            helper.get_twiddle(base_index+index, n), twiddle_width), twiddle_width)
+            helper.get_twiddle(base_index+index, n), width), width)
                     for index in range(batch_size)]
         twiddle_batches.append(twiddles)
     params = {
         'n': n,
         'size': size,
         'width': width,
-        'twiddle_width': twiddle_width,
         'suffix': suffix,
         'twiddle_batches': twiddle_batches,
         }
@@ -52,7 +51,6 @@ class StageGenerator(Generator):
             n=self.config['n'],
             size=self.config['size'],
             width=self.config['width'],
-            twiddle_width=self.config['twiddle_width'],
             suffix=self.config['suffix'],
             pipelines=self.config.get('pipelines', None),
             make_pipeline_pkg=self.config.get('make_pipeline_pkg', False),
@@ -60,7 +58,7 @@ class StageGenerator(Generator):
         self.add_files(output_filenames, file_type='vhdlSource')
 
 
-def make_stage_core(directory, suffix, n, size, width, twiddle_width, pipelines):
+def make_stage_core(directory, suffix, n, size, width, pipelines):
     """
     Utility function for generating a core file from python.
     """
@@ -69,7 +67,6 @@ def make_stage_core(directory, suffix, n, size, width, twiddle_width, pipelines)
         'n': n,
         'size': size,
         'width': width,
-        'twiddle_width': twiddle_width,
         'pipelines': pipelines,
         'make_pipeline_pkg': True,
         }

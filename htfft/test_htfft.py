@@ -107,7 +107,6 @@ def get_test_params(n_tests, base_seed=0):
             'n': n,
             'spcc': spcc,
             'input_width': input_width,
-            'twiddle_width': input_width,
             'pipelines': htfft_gen.random_pipeline(rnd, spcc),
             }
         n_vectors = 10

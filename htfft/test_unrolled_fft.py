@@ -69,7 +69,6 @@ def get_test_params(n_tests, base_seed=0):
             'suffix': suffix,
             'n': n,
             'input_width': input_width,
-            'twiddle_width': input_width,
             'pipelines': htfft_gen.random_pipeline(rnd, n),
             }
         test_params = {

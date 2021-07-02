@@ -5,34 +5,20 @@
 An implementation designed to work for large FFT sizes, high clock frequencies,
 and with multiple samples consumed every clock cycle.
 
+Currently only supports fixed-point arithmetic but shouldn't be difficult to extend
+to floating point.
+
 Several of the VHDL entities, including the top-level entity are generated.  The
 parameters for the top-level generator are:
 
 - **N**: The number of samples in a FFT.  Must be a power of two.
 - **SPCC**: The number of samples consumed every clock cycle.  Must be at least 2 and a power of two.
 - **INPUT_WIDTH**: The bit-width of an input sample.
-- **TWIDDLE_WIDTH**: The bit-width of a twiddle factor.
 - **SUFFIX**: A suffix appended to the generated entity names.
 
 Generation is done using Jinja2 templates and Fusesoc generators.  Testing is done using cocotb.
 An fully unrolled FFT for when N=SPCC was created as part of the HTFFT, but can also be
 used independently.
-
-To do
------
-* [x] Butterfly
-* [x] Unrolled FFT
-* [x] FFT Stage
-* [x] Initial memory
-* [x] Final memory
-* [x] Top level
-* [x] Improve testing
-* [x] Investigate rounding and precision
-* [x] Check timing and resources
-* [ ] Documentation
-* [ ] Add testing with gaps between vectors
-* [ ] Add option to trim bits from later stages
-* [ ] Look at literature
 
 Resource Usage and Timing
 -------------------------
@@ -238,3 +224,20 @@ Thinking about Rounding and Precision
   
   Seems like nothing is horribly broken.  Next step would be to look at the literature
   a bit to see if there are any tricks I'm missing.
+
+To do
+-----
+* [x] Butterfly
+* [x] Unrolled FFT
+* [x] FFT Stage
+* [x] Initial memory
+* [x] Final memory
+* [x] Top level
+* [x] Improve testing
+* [x] Investigate rounding and precision
+* [x] Check timing and resources
+* [ ] Documentation
+* [ ] Add testing with gaps between vectors
+* [ ] Add option to trim bits from later stages
+* [ ] Add support for floating point arithmetic
+* [ ] Look at literature
