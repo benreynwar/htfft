@@ -40,11 +40,12 @@ Resource Usage and Timing
 ### N=1024, SPCC=4, WIDTH=32
 
 Using Xilinx xczu5eg-fbvb900-2-i with `-mode out_of_context` for synthesis.
-------|-----------------------------------
-LUT   |  7085 (of which 1812 are LUTRAM)
-FF    |  6533
-BRAM  |     9.5
-DSP   |    80
+
+|-------|----------------------------------|
+| LUT   |  7085 (of which 1812 are LUTRAM) |
+| FF    |  6533                            |
+| BRAM  |     9.5                          |
+| DSP   |    80                            |
 
 Comfortably meeting timing at 500 MHz.
 
@@ -55,11 +56,12 @@ LUT, BRAM and DSP so it's a fairly balanced solution.
 ### N=4096, SPCC=16, WIDTH=32
 
 Using Xilinx xczu5eg-fbvb900-2-i with `-mode out_of_context` for synthesis.
-------|--------------------------------------
-LUT   |  26904 (of which 5095 are LUTRAM)
-FF    |  46443
-BRAM  |     57
-DSP   |    384
+
+|-------|-----------------------------------|
+| LUT   |  26904 (of which 5095 are LUTRAM) |
+| FF    |  46443                            |
+| BRAM  |     57                            |
+| DSP   |    384                            | 
 
 Meeting timing at 500 MHz
 
