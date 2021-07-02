@@ -141,13 +141,9 @@ Modules
 
 - HFFT
   * A high throughput FFT implementation.
-  * Work in progress.
-  * Initial memory and final memory are unimplemented.
  
 - unrolled fft
-  * An unrolled FFT implementation for when N = SIZE.
-  * Working but needs work to investigate rounding and optimum precision
-    at different stages.  Probably still buggy.
+  * An unrolled FFT implementation for when N = SPCC.
    
 - unrolled fft inner
   * An internal module of the unrolled_fft. Includes everything except
@@ -159,8 +155,7 @@ Modules
     unrolled_fft.
    
 - stage
-  * A stage in a FFT where SIZE < N.  Used interally in the HTFFT.
-  * Mostly working but poorly tested.  Has issues with rounding an precision.
+  * A stage in a FFT where SPCC < N.  Used interally in the HTFFT.
   * More [Stage Docs](/docs/stage.md)
  
 - butterfly
@@ -177,17 +172,22 @@ Modules
  
 - htfft pkg
   * A package with utility functions.
+
+- htfft pipeline
+  * Defines which pipeline stages are registered.
+
+- htfft params
+  * Defines some top level parameters.
  
 - initial memory
   * Does the initial reordering in the HTFFT.
-  * Work in progress
   * More [Intial Memory Docs](/docs/initial_memory.md)
    
 - barrel shifter
-  * A barrel shifter implementation.  Used in the initial_memory. Unimplemented.
+  * A barrel shifter implementation.  Used in the initial_memory.
 
 - final memory
-  * Does the final reordering in the HTFFT.  Unimplemented.
+  * Does the final reordering in the HTFFT.
 
 Thinking about Rounding and Precision
 -------------------------------------
