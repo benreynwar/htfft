@@ -41,6 +41,7 @@ Resource Usage and Timing
 
 Using Xilinx xczu5eg-fbvb900-2-i with `-mode out_of_context` for synthesis.
 
+|       |                                  |
 |-------|----------------------------------|
 | LUT   |  7085 (of which 1812 are LUTRAM) |
 | FF    |  6533                            |
@@ -57,6 +58,7 @@ LUT, BRAM and DSP so it's a fairly balanced solution.
 
 Using Xilinx xczu5eg-fbvb900-2-i with `-mode out_of_context` for synthesis.
 
+|       |                                   |
 |-------|-----------------------------------|
 | LUT   |  26904 (of which 5095 are LUTRAM) |
 | FF    |  46443                            |
