@@ -10,7 +10,7 @@ from cocotb import clock, triggers
 
 from htfft import helper, conversions
 from htfft import test_butterfly
-from htfft import unrolled_fft_gen
+from htfft import unrolled_fft_gen, htfft_gen
 from htfft.test_htfft import get_expected_discrepancy
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -44,7 +44,7 @@ async def unrolled_fft_test(dut):
     cocotb.fork(send_data(rnd, dut, input_width, size, sent_data))
     for i in range(latency):
         await triggers.RisingEdge(dut.clk)
-    for i in range(20):
+    for i in range(10):
         await triggers.ReadOnly()
         sent_vector = sent_data.popleft()
         o_data = int(dut.o_data.value)
@@ -63,22 +63,14 @@ def get_test_params(n_tests, base_seed=0):
         seed = (base_seed + test_index) * 123214
         rnd = Random(seed)
         suffix = '_{}_test'.format(test_index)
-        n = rnd.choice([8, 16, 32, 64, 128, 256])
+        n = rnd.choice([8, 16, 32, 64, 128])
         input_width = rnd.choice([8, 32])
         generation_params = {
             'suffix': suffix,
             'n': n,
             'input_width': input_width,
             'twiddle_width': input_width,
-            'pipelines': {
-                'butterfly': {
-                    'mult_latency': rnd.randint(1, 4),
-                    'reg_i_p': rnd.choice([True, False]),
-                    'reg_q_r': rnd.choice([True, False]),
-                    'reg_r_s': rnd.choice([True, False]),
-                    'reg_s_o': rnd.choice([True, False]),
-                    },
-                },
+            'pipelines': htfft_gen.random_pipeline(rnd, n),
             }
         test_params = {
             'seed': seed,

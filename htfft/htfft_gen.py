@@ -8,6 +8,25 @@ from htfft import helper, unrolled_fft_gen, stage_gen
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
+def random_pipeline(rnd, spcc):
+    pipelines = {
+        'barrel_shifter': ''.join(rnd.choice(('0', '1')) for i in range(helper.logceil(spcc)+1)),
+        'butterfly': {
+            'mult_latency': rnd.randint(1, 4),
+            'reg_i_p': rnd.choice([True, False]),
+            'reg_q_r': rnd.choice([True, False]),
+            'reg_r_s': rnd.choice([True, False]),
+            'reg_s_o': rnd.choice([True, False]),
+            },
+        'stage': {
+            'reg_fromread_buffered': rnd.choice([True, False]),
+            'reg_buffered_tobutterfly': rnd.choice([True, False]),
+            },
+        'reg_s_': rnd.choice([True, False]),
+        }
+    return pipelines
+
+
 def make_pipeline_pkg(suffix, pipelines):
     pipeline_template = os.path.join(basedir, 'htfft_pipeline.vhd')
     with open(pipeline_template, 'r') as f:

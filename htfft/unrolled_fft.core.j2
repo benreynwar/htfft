@@ -31,3 +31,7 @@ generate:
           reg_q_r: {{pipelines.butterfly.reg_q_r}}
           reg_r_s: {{pipelines.butterfly.reg_r_s}}
           reg_s_o: {{pipelines.butterfly.reg_s_o}}
+        stage:
+          reg_fromread_buffered: {{pipelines.stage.reg_fromread_buffered}}
+          reg_buffered_tobutterfly: {{pipelines.stage.reg_buffered_tobutterfly}}
+        reg_s_o: {{pipelines.reg_s_o}}

@@ -102,24 +102,13 @@ def get_test_params(n_tests, base_seed=0):
                          if helper.logceil(spcc) <= helper.logceil(n)/2]
         spcc = rnd.choice(possible_spcc)
         input_width = rnd.choice([8, 32])
-        barrel_shifter_pipeline = ''.join(rnd.choice(('0', '1'))
-                                          for i in range(helper.logceil(spcc)+1))
         generation_params = {
             'suffix': suffix,
             'n': n,
             'spcc': spcc,
             'input_width': input_width,
             'twiddle_width': input_width,
-            'pipelines': {
-                'barrel_shifter': barrel_shifter_pipeline,
-                'butterfly': {
-                    'mult_latency': rnd.randint(1, 4),
-                    'reg_i_p': rnd.choice([True, False]),
-                    'reg_q_r': rnd.choice([True, False]),
-                    'reg_r_s': rnd.choice([True, False]),
-                    'reg_s_o': rnd.choice([True, False]),
-                    },
-                },
+            'pipelines': htfft_gen.random_pipeline(rnd, spcc),
             }
         n_vectors = 10
         test_params = {
@@ -152,7 +141,7 @@ def run_test(test_params, wave=False):
         test_params=test_params)
 
 
-@pytest.mark.parametrize('test_params', get_test_params(n_tests=1))
+@pytest.mark.parametrize('test_params', get_test_params(n_tests=10))
 def test_htfft(test_params):
     run_test(test_params, wave=False)
 

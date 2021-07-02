@@ -4,7 +4,6 @@
 
 An implementation designed to work for large FFT sizes, high clock frequencies,
 and with multiple samples consumed every clock cycle.
-**This is a work in progress, and is not yet functional.**
 
 Several of the VHDL entities, including the top-level entity are generated.  The
 parameters for the top-level generator are:
@@ -27,11 +26,78 @@ To do
 * [x] Initial memory
 * [x] Final memory
 * [x] Top level
-* [ ] Documentation
-* [ ] Improve testing
+* [x] Improve testing
 * [x] Investigate rounding and precision
-* [ ] Look for better architectures in literature.
-* [ ] Investigate expected errors in literature.
+* [x] Check timing and resources
+* [ ] Documentation
+* [ ] Add testing with gaps between vectors
+* [ ] Add option to trim bits from later stages
+* [ ] Look at literature
+
+Resource Usage and Timing
+-------------------------
+
+N=1024, SPCC=4, WIDTH=32
+^^^^^^^^^^^^^^^^^^^^^^^^
+Using Xilinx xczu5eg-fbvb900-2-i with `-mode out_of_context` for synthesis.
+LUT     7085 (of which 1812 are LUTRAM)
+FF      6533
+BRAM       9.5
+DSP       80
+
+Comfortably meeting timing at 500 MHz.
+
+For N=1024 we need 10 stages.  Each stage should have 2 butterflys which is 8 multiplications
+so we're using 1 DSP/multiplication which makes sense.  For this chip we're using 6-7% of the
+LUT, BRAM and DSP so it's a fairly balanced solution.
+
+N=4096, SPCC=16, WIDTH=32
+^^^^^^^^^^^^^^^^^^^^^^^^^
+Using Xilinx xczu5eg-fbvb900-2-i with `-mode out_of_context` for synthesis.
+LUT     26904 (of which 5095 are LUTRAM)
+FF      46443
+BRAM       57
+DSP       384
+
+Meeting timing at 500 MHz
+
+For N=4096 we need 12 stages. Each stage should have 8 butterflys
+which is 32 multiplications. We're using more than 1
+dsp/multiplication. The bit-width going into the multiplications in
+final stage will be 16 + 11 = 27 bits. The output will be 54 bits.
+It's possible we need multiple DSPs to do these final multiplications.
+We're using 64 extra dsps which implies the last 2 stages need 2 DSPs
+for each multiplication.
+
+To avoid this the core should really have an option to trim the MSB or LSB off at a certain stage.
+
+For this configuration we have
+L=4096/32=128
+butterfly latency = 7
+stage_latency = butterfly_latency + L/2 + 2
+unrolled_latency = n_stages * butterfly_latency
+                 = 5 * 7 = 35
+stage_32 = 7 + 2 + 32/32
+stage_64 = 7 + 2 + 64/32
+stage_32 + ... + stage_2048 = 9 * 8 + 1+2+4+8+16+32+64
+                            = 72 + 127
+                            = 199
+initial_memory = 128
+final_memory = 64
+
+total_latency = 199 + 128 + 64 = 391cc
+throughput = 1 fft/128 cc
+
+At any given time the hardware is processing 4 different ffts at different
+positions in the pipeline.
+
+Total throughput = 32 samples/cc
+                 = 16 samples/ns  @ 500 MHz
+                 = 16 GSamples/s
+                 = 64 GB/s        @ 32bits per sample
+                 OR
+                 = 8 GHz of spectrum @ the Nyquist rate
+
 
 Architecture
 ------------

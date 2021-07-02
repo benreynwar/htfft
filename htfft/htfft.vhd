@@ -39,7 +39,9 @@ architecture arch of htfft{{suffix}} is
   signal r{{loop.index0}}_data_b: std_logic_vector((R_WIDTH+2*{{loop.index0}})*SPCC/2-1 downto 0);
   {% endfor %}
 
-  signal o_beforefirst: std_logic;
+  signal s_beforefirst: std_logic;
+  signal s_first: std_logic;
+  signal s_data: std_logic_vector(SPCC*OUTPUT_WIDTH-1 downto 0);
 
 begin
 
@@ -119,14 +121,31 @@ begin
       i_beforefirst => r{{n_stages}}_reset,
       i_data_a => r{{n_stages}}_data_a,
       i_data_b => r{{n_stages}}_data_b,
-      o_beforefirst => o_beforefirst,
-      o_data => o_data
+      o_beforefirst => s_beforefirst,
+      o_data => s_data
       );
   process(clk)
   begin
     if rising_edge(clk) then
-      o_first <= o_beforefirst;
+      s_first <= s_beforefirst;
     end if;
   end process;
+
+  yes_reg_s_o: if REG_S_O generate
+    process(clk)
+    begin
+      if rising_edge(clk) then
+        o_first <= s_first;
+        o_data <= s_data;
+        if reset = '1' then
+          o_first <= '0';
+        end if;
+      end if;
+    end process;
+  end generate;
+  no_reg_s_o: if not REG_S_O generate
+    o_first <= s_first;
+    o_data <= s_data;
+  end generate;
   
 end architecture;

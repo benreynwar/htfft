@@ -51,15 +51,26 @@ architecture arch of stage_{{n}}{{suffix}} is
   signal toread_valid_b: std_logic;
   signal toread_address: unsigned(logceil(L/2)-1 downto 0);
 
+  subtype t_twiddle is std_logic_vector(TWIDDLE_WIDTH-1 downto 0);
+  type array_of_twiddles is array(natural range <>) of t_twiddle;
   signal fromread_data_a: std_logic_vector(SIZE*WIDTH/2-1 downto 0);
   signal fromread_data_b: std_logic_vector(SIZE*WIDTH/2-1 downto 0);
+  signal fromread_twiddles: array_of_twiddles(SIZE/2-1 downto 0);
+  signal fromread_swap: std_logic;
 
+  signal buffered_data_a: std_logic_vector(SIZE*WIDTH/2-1 downto 0);
+  signal buffered_data_b: std_logic_vector(SIZE*WIDTH/2-1 downto 0);
+  signal buffered_twiddles: array_of_twiddles(SIZE/2-1 downto 0);
+  signal buffered_swap: std_logic;
+  signal buffered_newdata_a: std_logic_vector(SIZE*WIDTH/2-1 downto 0);
+  signal buffered_switchdata_a: std_logic_vector(SIZE*WIDTH/2-1 downto 0);
+  signal buffered_switchdata_b: std_logic_vector(SIZE*WIDTH/2-1 downto 0);
+
+  signal tobutterfly_twiddles: array_of_twiddles(SIZE/2-1 downto 0);
   signal tobutterfly_swap: std_logic;
   signal tobutterfly_data_a: std_logic_vector(SIZE*WIDTH/2-1 downto 0);
   signal tobutterfly_data_b: std_logic_vector(SIZE*WIDTH/2-1 downto 0);
 
-  subtype t_twiddle is std_logic_vector(TWIDDLE_WIDTH-1 downto 0);
-  type array_of_twiddles is array(natural range <>) of t_twiddle;
   subtype t_batch_of_twiddles is array_of_twiddles(SIZE/2-1 downto 0);
   type array_of_batches_of_twiddles is array(natural range <>) of t_batch_of_twiddles;
 
@@ -67,7 +78,6 @@ architecture arch of stage_{{n}}{{suffix}} is
   type array_of_data is array(natural range <>) of t_data;
   signal tobutterfly_dataarray_a: array_of_data(SIZE/2-1 downto 0);
   signal tobutterfly_dataarray_b: array_of_data(SIZE/2-1 downto 0);
-  signal tobutterfly_twiddles: array_of_twiddles(SIZE/2-1 downto 0);
 
   subtype t_odata is std_logic_vector(WIDTH+2-1 downto 0);
   type array_of_odata is array(natural range <>) of t_odata;
@@ -156,18 +166,54 @@ begin
       write_data => write_data_b
       );
 
-  tobutterfly_data_a <= fromread_data_a when tobutterfly_swap = '0' else
-                        fromread_data_b;
-  tobutterfly_data_b <= i_data_a when tobutterfly_swap = '0' else
-                        fromread_data_a;
-
   process(clk)
   begin
     if rising_edge(clk) then
-      tobutterfly_twiddles <= LOCAL_TWIDDLES(to_integer(read_index));
-      tobutterfly_swap <= read_index(logceil(L)-1);
+      fromread_twiddles <= LOCAL_TWIDDLES(to_integer(read_index));
+      fromread_swap <= read_index(logceil(L)-1);
     end if;
   end process;
+
+  yes_fromread_buffered: if STAGE_REG_FROMREAD_BUFFERED generate
+    process(clk)
+    begin
+      if rising_edge(clk) then
+        buffered_data_a <= fromread_data_a;
+        buffered_data_b <= fromread_data_b;
+        buffered_twiddles <= fromread_twiddles;
+        buffered_swap <= fromread_swap;
+        buffered_newdata_a <= i_data_a;
+      end if;
+    end process;
+  end generate;
+  no_fromread_buffered: if not STAGE_REG_FROMREAD_BUFFERED generate
+    buffered_data_a <= fromread_data_a;
+    buffered_data_b <= fromread_data_b;
+    buffered_twiddles <= fromread_twiddles;
+    buffered_swap <= fromread_swap;
+    buffered_newdata_a <= i_data_a;
+  end generate;
+
+  buffered_switchdata_a <= buffered_data_a when buffered_swap = '0' else
+                           buffered_data_b;
+  buffered_switchdata_b <= buffered_newdata_a when buffered_swap = '0' else
+                           buffered_data_a;
+
+  yes_buffered_tobutterfly: if STAGE_REG_BUFFERED_TOBUTTERFLY generate
+    process(clk)
+    begin
+      if rising_edge(clk) then
+        tobutterfly_data_a <= buffered_switchdata_a;
+        tobutterfly_data_b <= buffered_switchdata_b;
+        tobutterfly_twiddles <= buffered_twiddles;
+      end if;
+    end process;
+  end generate;
+  no_buffered_tobutterfly: if not STAGE_REG_BUFFERED_TOBUTTERFLY generate
+    tobutterfly_data_a <= buffered_switchdata_a;
+    tobutterfly_data_b <= buffered_switchdata_b;
+    tobutterfly_twiddles <= buffered_twiddles;
+  end generate;
 
   loop_butterflys: for bf_index in 0 to SIZE/2-1 generate
     tobutterfly_dataarray_a(bf_index) <= tobutterfly_data_a((bf_index+1)*WIDTH-1 downto bf_index*WIDTH);
@@ -200,7 +246,7 @@ begin
   sr: entity work.shift_register
     generic map (
       WIDTH => 1,
-      LENGTH => BUTTERFLY_LATENCY + L/2
+      LENGTH => BUTTERFLY_LATENCY + L/2 + boolean_to_int(STAGE_REG_FROMREAD_BUFFERED) + boolean_to_int(STAGE_REG_BUFFERED_TOBUTTERFLY)
       )
     port map (
       clk => clk,
