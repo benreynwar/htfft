@@ -20,6 +20,30 @@ Generation is done using Jinja2 templates and Fusesoc generators.  Testing is do
 An fully unrolled FFT for when N=SPCC was created as part of the HTFFT, but can also be
 used independently.
 
+Generation
+----------
+Since the generation scripts use python, it is necessary to have a working
+python installtion to generate the core.  The generation is tested for
+python 3.8.
+
+Before following these next steps, it's best to create a python virtual
+environment that `pip` will install the `htfft` package into.
+
+    git clone https://github.com/benreynwar/htfft.git
+    cd htfft
+    pip install -e .
+
+Once python is installed you can generate the cores either directly, by creating a core file
+and using `fusesoc` or indirectly using a provided script.  If you're already familiar with `fusesoc` then
+just use that, otherwise run:
+
+    cd htfft
+    python generate_core.py --n 1024 --spcc 4  --width 32
+    
+A directory `htfft_n1024_spcc4_width32` will be created containing the necessary vhdl
+files.
+
+
 Resource Usage and Timing
 -------------------------
 
@@ -62,36 +86,6 @@ We're using 64 extra dsps which implies the last 2 stages need 2 DSPs
 for each multiplication.
 
 To avoid this the core should really have an option to trim the MSB or LSB off at a certain stage.
-
-For this configuration we have
-
-    L=4096/32=128
-    butterfly latency = 7
-    stage_latency = butterfly_latency + L/2 + 2
-    unrolled_latency = n_stages * butterfly_latency
-                     = 5 * 7 = 35
-
-    stage_32 = 7 + 2 + 32/32
-    stage_64 = 7 + 2 + 64/32
-    stage_32 + ... + stage_2048 = 9 * 8 + 1+2+4+8+16+32+64
-                                = 72 + 127
-                                = 199
-    initial_memory = 128
-    final_memory = 64
-    
-    total_latency = 199 + 128 + 64 = 391cc
-    throughput = 1 fft/128 cc
-
-At any given time the hardware is processing 4 different ffts at different
-positions in the pipeline.
-
-    Total throughput = 32 samples/cc
-                     = 16 samples/ns  @ 500 MHz
-                     = 16 GSamples/s
-                     = 64 GB/s        @ 32bits per sample
-                     OR
-                     = 8 GHz of spectrum @ the Nyquist rate
-
 
 Architecture
 ------------
@@ -236,8 +230,45 @@ To do
 * [x] Improve testing
 * [x] Investigate rounding and precision
 * [x] Check timing and resources
+* [ ] Use ghdl synth to convert to verilog.
 * [ ] Documentation
 * [ ] Add testing with gaps between vectors
 * [ ] Add option to trim bits from later stages
 * [ ] Add support for floating point arithmetic
 * [ ] Look at literature
+
+### Throughput for N=4096, SPCC=16, WIDTH=32
+
+For this configuration we have
+
+    L=4096/32=128
+    butterfly latency = 7
+    stage_latency = butterfly_latency + L/2 + 2
+    unrolled_latency = n_stages * butterfly_latency
+                     = 5 * 7 = 35
+
+    stage_32 latency = 7 + 2 + 32/32
+    stage_64 latency = 7 + 2 + 64/32
+    stage_32 + ... + stage_2048 = 9 * 8 + 1+2+4+8+16+32+64
+                                = 72 + 127
+                                = 199
+    initial_memory latency = 128
+    final_memory latency = 64
+    
+    total_latency = 199 + 128 + 64 = 391cc
+    throughput = 1 fft/128 cc
+
+At any given time the hardware is processing 4 different ffts at different
+positions in the pipeline.
+
+    Total throughput = 32 samples/cc
+                     = 16 samples/ns  @ 500 MHz
+                     = 16 GSamples/s
+                     = 64 GB/s        @ 32bits per sample
+                     OR
+                     = 8 GHz of spectrum @ the Nyquist rate
+                     
+## Misc
+
+* [General HDL thoughts] /docs/hdl_thoughts.md)
+
