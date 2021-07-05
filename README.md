@@ -24,7 +24,7 @@ Generation
 ----------
 Since the generation scripts use python, it is necessary to have a working
 python installtion to generate the core.  The generation is tested for
-python 3.8.
+python 3.7, 3.8 and 3.9.
 
 Before following these next steps, it's best to create a python virtual
 environment that `pip` will install the `htfft` package into.
