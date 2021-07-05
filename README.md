@@ -237,7 +237,8 @@ To do
 * [ ] Add support for floating point arithmetic
 * [ ] Look at literature
 
-### Throughput for N=4096, SPCC=16, WIDTH=32
+Throughput for N=4096, SPCC=16, WIDTH=32
+----------------------------------------
 
 For this configuration we have
 
@@ -268,7 +269,7 @@ positions in the pipeline.
                      OR
                      = 8 GHz of spectrum @ the Nyquist rate
                      
-## Misc
+Misc
+----
 
-* [General HDL thoughts] /docs/hdl_thoughts.md)
-
+* [General HDL thoughts] (/docs/hdl_thoughts.md)
