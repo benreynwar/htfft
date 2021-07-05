@@ -272,4 +272,4 @@ positions in the pipeline.
 Misc
 ----
 
-* [General HDL thoughts] (/docs/hdl_thoughts.md)
+* [General HDL Thoughts](/docs/hdl_thoughts.md)
