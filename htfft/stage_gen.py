@@ -3,8 +3,7 @@ import os
 import jinja2
 from fusesoc.capi2.generator import Generator
 
-from htfft import helper, conversions
-import htfft_gen
+from htfft import helper, conversions, htfft_gen
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
