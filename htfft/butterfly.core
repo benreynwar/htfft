@@ -8,6 +8,7 @@ filesets:
     files:
       - mult.vhd
       - butterfly.vhd
+    file_type: vhdlSource
     depend:
       - shift_register
 

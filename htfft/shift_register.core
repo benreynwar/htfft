@@ -7,6 +7,7 @@ filesets:
   default:
     files:
       - shift_register.vhd
+    file_type: vhdlSource
 
 targets:
   default:
